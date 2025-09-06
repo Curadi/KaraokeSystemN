@@ -1,0 +1,78 @@
+﻿# Seção que define os serviços (containers) da sua aplicação
+services:
+  # Serviço do banco de dados PostgreSQL
+  db:
+    image: postgres:14-alpine
+    container_name: karaoke_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Teste
+      - POSTGRES_DB=karaoke_db
+    volumes:
+      # Mantém os dados do banco persistentes
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      # Mapeia a porta do container para a porta da sua máquina
+      - "5432:5432"
+    # --- ADICIONADO HEALTHCHECK AQUI ---
+    healthcheck:
+      # Comando que o Docker vai rodar para checar se o banco está pronto
+      test: ["CMD-SHELL", "pg_isready -U postgres -d karaoke_db"]
+      # Intervalo entre as checagens
+      interval: 5s
+      # Tempo máximo de espera por uma resposta
+      timeout: 5s
+      # Número de tentativas antes de falhar
+      retries: 5
+
+  # Serviço da API em C# (Backend)
+  backend:
+    build:
+      # O contexto agora aponta para a raiz do projeto (.),
+      # onde seu Dockerfile e projeto .NET estão localizados.
+      context: .
+      dockerfile: Dockerfile
+    container_name: karaoke_backend
+    restart: always
+    environment:
+      # Força o ambiente para Desenvolvimento
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Define a string de conexão, usando o nome do serviço 'db'
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=karaoke_db;Username=postgres;Password=Teste
+      # Força a porta HTTP para 8080 no ambiente do container
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      # Mapeia a porta do contêiner para a porta da sua máquina
+      - "7001:8080"
+    depends_on:
+      # Garante que o serviço 'db' inicie e esteja SAUDÁVEL antes do backend
+      db:
+        condition: service_healthy
+    # --- ADICIONADO VOLUME PARA VIDEOS AQUI ---
+    volumes:
+      # Mapeia a pasta 'Videos' na raiz do projeto para '/app/videos' dentro do contêiner
+      - ./Videos:/app/videos
+
+  # Serviço do frontend em Next.js
+  frontend:
+    build:
+      # O contexto de construção é a pasta onde o Dockerfile do frontend está
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: karaoke_frontend
+    restart: always
+    environment:
+      # A URL da API para o frontend usar
+      - NEXT_PUBLIC_API_URL=http://localhost:7001
+    ports:
+      # Mapeia a porta do container para a porta da sua máquina
+      - "3000:3000"
+    depends_on:
+      # Garante que o serviço 'backend' inicie antes do frontend
+      - backend
+
+# Seção que define os volumes para persistência de dados
+volumes:
+  postgres-data:
+
