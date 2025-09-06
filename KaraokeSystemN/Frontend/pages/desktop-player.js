@@ -3,22 +3,23 @@ import { useRouter } from 'next/router';
 import { jwtDecode } from 'jwt-decode';
 
 export default function DesktopPlayer() {
-    const [status, setStatus] = useState('waiting');
+    const [status, setStatus] = useState('waiting'); // waiting, confirming, playing
     const [currentSong, setCurrentSong] = useState(null);
     const [countdown, setCountdown] = useState(20);
     const [error, setError] = useState('');
     const router = useRouter();
     const videoRef = useRef(null);
 
+    // Função para buscar a próxima música
     const fetchNextSong = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
             router.push('/');
             return;
         }
-        console.log('A verificar o player...');
+        console.log('A verificar a fila...');
         try {
-            const response = await fetch('http://localhost:7001/api/player/next', {
+            const response = await fetch('http://localhost:7001/api/queue/next', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
@@ -31,10 +32,11 @@ export default function DesktopPlayer() {
                 setCountdown(20);
             }
         } catch (err) {
-            console.error('Falha ao verificar o player:', err);
+            console.error('Falha ao verificar a fila:', err);
         }
     };
 
+    // Efeito para a contagem decrescente
     useEffect(() => {
         if (status !== 'confirming') return;
         if (countdown === 0) {
@@ -45,6 +47,7 @@ export default function DesktopPlayer() {
         return () => clearTimeout(timer);
     }, [status, countdown]);
 
+    // Efeito para verificar a fila periodicamente
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (!token) return;
@@ -66,20 +69,7 @@ export default function DesktopPlayer() {
         return () => clearInterval(interval);
     }, [status, router]);
 
-    const informBackendVideoFinished = async () => {
-        const token = localStorage.getItem('authToken');
-        try {
-            await fetch('http://localhost:7001/api/player/finished', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-        } catch (err) {
-            console.error("Erro ao informar o fim do vídeo:", err);
-        }
-    };
-
     const handleVideoEnd = async () => {
-        console.log(`O vídeo "${currentSong.songName}" terminou.`);
         const token = localStorage.getItem('authToken');
         try {
             await fetch('http://localhost:7001/api/played-song-log/log', {
@@ -93,8 +83,6 @@ export default function DesktopPlayer() {
         } catch (err) {
             console.error('ERRO ao registar a música como tocada:', err);
         }
-
-        await informBackendVideoFinished();
         resetPlayer();
     };
 
@@ -110,34 +98,20 @@ export default function DesktopPlayer() {
                 throw new Error(`Não foi possível carregar o vídeo (status: ${response.status})`);
             }
             const videoBlob = await response.blob();
-
             if (videoRef.current) {
-                // Revoga a URL antiga se ela existir, para libertar memória
                 if (videoRef.current.src) {
                     URL.revokeObjectURL(videoRef.current.src);
                 }
-                // Cria e atribui a nova URL
                 videoRef.current.src = URL.createObjectURL(videoBlob);
-                videoRef.current.load(); // Ajuda a garantir que o novo source é carregado
-                const playPromise = videoRef.current.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error("Erro na reprodução automática:", error);
-                        // Fornece um erro mais amigável se o autoplay falhar
-                        setError("Não foi possível iniciar a reprodução. Clique no play.");
-                    });
-                }
+                videoRef.current.play();
             }
-
         } catch (err) {
-            console.error("Erro detalhado ao carregar o vídeo:", err);
             setError('Erro ao carregar o vídeo. A voltar ao início.');
             setTimeout(resetPlayer, 3000);
         }
     };
 
-    const handleSkip = async () => {
-        await informBackendVideoFinished();
+    const handleSkip = () => {
         resetPlayer();
     };
 
@@ -151,13 +125,11 @@ export default function DesktopPlayer() {
         setError('');
     };
 
-    if (error) {
-        return <div className="flex items-center justify-center min-h-screen bg-black text-white text-2xl">{error}</div>;
-    }
+    if (error) return <div className="flex items-center justify-center min-h-screen bg-black text-white text-2xl">{error}</div>;
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black text-white relative">
-            {status === 'waiting' && <h1 className="text-4xl">A aguardar o próximo cantor...</h1>}
+            {status === 'waiting' && <h1 className="text-4xl">Aguardando o próximo cantor...</h1>}
             {status === 'confirming' && currentSong && (
                 <div className="text-center">
                     <h2 className="text-2xl mb-2">A seguir:</h2>
@@ -173,27 +145,6 @@ export default function DesktopPlayer() {
                 ref={videoRef}
                 controls
                 onEnded={handleVideoEnd}
-                onError={(e) => {
-                    // Adiciona um log de erro mais detalhado na consola do navegador
-                    const videoError = e.target.error;
-                    console.error('Erro no elemento de vídeo:', videoError);
-                    let errorMessage = 'Ocorreu um erro ao tentar reproduzir o vídeo.';
-                    if (videoError) {
-                        switch (videoError.code) {
-                            case videoError.MEDIA_ERR_DECODE:
-                                errorMessage = 'Ocorreu um erro na descodificação do vídeo. O ficheiro pode estar corrompido ou num formato não suportado.';
-                                break;
-                            case videoError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                                errorMessage = 'O formato do vídeo não é suportado.';
-                                break;
-                            default:
-                                errorMessage = 'Ocorreu um erro desconhecido no vídeo.';
-                                break;
-                        }
-                    }
-                    setError(errorMessage);
-                    handleSkip();
-                }}
                 className={`w-full h-full ${status === 'playing' ? 'block' : 'hidden'}`}
             />
         </div>

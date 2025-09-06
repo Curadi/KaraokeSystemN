@@ -42,7 +42,7 @@ export default function Player() {
     };
 
     if (!songName || !queueId) {
-        return <p className="text-center mt-10">A carregar música...</p>;
+        return <p className="text-center mt-10">Carregando a música...</p>;
     }
 
     return (

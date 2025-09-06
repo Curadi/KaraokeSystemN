@@ -54,6 +54,23 @@ namespace KaraokeSystemN.Application.Controllers
             });
             return Ok(response);
         }
+
+        [HttpGet("next")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetNextInQueue()
+        {
+            var nextItem = await _queueService.GetAndRemoveNextAsync();
+            if (nextItem == null)
+            {
+                // Retorna um objeto vazio com sucesso se a fila estiver vazia
+                return Ok(new { });
+            }
+            return Ok(new
+            {
+                songName = nextItem.SongName,
+                userName = nextItem.UserName
+            });
+        }
     }
 }
 

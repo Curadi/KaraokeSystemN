@@ -9,6 +9,7 @@ export default function Queue() {
     const [isAdmin, setIsAdmin] = useState(false);
     const router = useRouter();
 
+    // Efeito para verificar a role do utilizador
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
@@ -21,6 +22,7 @@ export default function Queue() {
         }
     }, []);
 
+    // Função unificada para buscar os dados da fila
     const fetchQueue = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -35,29 +37,37 @@ export default function Queue() {
                 throw new Error('Não foi possível carregar a fila.');
             }
             const data = await response.json();
-            // CORREÇÃO: Verificamos se 'data' é um array antes de o definir no estado
             if (Array.isArray(data)) {
                 setQueue(data);
             } else {
-                setQueue([]); // Se não for um array, definimos a fila como vazia
+                setQueue([]);
             }
         } catch (err) {
             setError(err.message);
         } finally {
-            // Apenas desliga o 'isLoading' no carregamento inicial
-            if (isLoading) setIsLoading(false);
+            // Garante que o estado de 'loading' seja desativado após a primeira busca
+            if (isLoading) {
+                setIsLoading(false);
+            }
         }
     };
 
     // Efeito para o carregamento inicial e para as atualizações automáticas
     useEffect(() => {
-        fetchQueue(); // Carregamento inicial
-        const interval = setInterval(fetchQueue, 5000); // Atualização a cada 5 segundos
-        return () => clearInterval(interval); // Limpa o intervalo ao sair da página
-    }, [router]);
+        // Busca os dados imediatamente quando a página carrega
+        fetchQueue();
 
-    const handlePlayClick = () => {
-        router.push(`/desktop-player`);
+        // Inicia um ciclo que chama a função de busca a cada 5 segundos
+        const interval = setInterval(fetchQueue, 5000);
+
+        // Função de limpeza: para o ciclo quando o utilizador sai da página
+        return () => clearInterval(interval);
+    }, [router]); // A dependência no router garante que o ciclo recomece se a rota mudar.
+
+    const handlePlayClick = (song) => {
+        // Leva o admin para a página do player, passando os detalhes da música.
+        // CORREÇÃO: Usando as propriedades corretas com letra minúscula
+        router.push(`/desktop-player?songName=${encodeURIComponent(song.songName)}&userName=${encodeURIComponent(song.userName)}`);
     };
 
     if (isLoading) return <p className="text-center mt-10">A carregar a fila...</p>;
@@ -71,23 +81,19 @@ export default function Queue() {
                     {queue.length > 0 ? (
                         <ul className="divide-y divide-gray-200">
                             {queue.map(item => (
-                                <li key={item.Id} className="p-4 flex justify-between items-center">
-                                    <div className="flex items-center">
-                                        <span className="text-lg font-bold text-blue-600 mr-4 w-8 text-center">{item.Position}º</span>
-                                        <div>
-                                            <p className="font-semibold text-gray-800">{item.SongName}</p>
-                                            <p className="text-sm text-gray-500">por: {item.UserName}</p>
+                                (item && item.id) && ( // Usamos 'id' minúsculo para a chave
+                                    <li key={item.id} className="p-4 flex justify-between items-center">
+                                        <div className="flex items-center">
+                                            {/* CORREÇÃO: A propriedade da posição também é minúscula ('position') */}
+                                            <span className="text-lg font-bold text-blue-600 mr-4 w-8 text-center">{item.position}º</span>
+                                            <div>
+                                                {/* CORREÇÃO: Usando as propriedades corretas com letra minúscula */}
+                                                <p className="font-semibold text-gray-650">{item.userName}</p>
+                                                <p className="text-sm text-gray-800">{item.songName}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {isAdmin && item.Position === 1 && (
-                                        <button
-                                            onClick={handlePlayClick}
-                                            className="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
-                                        >
-                                            Tocar
-                                        </button>
-                                    )}
-                                </li>
+                                    </li>
+                                )
                             ))}
                         </ul>
                     ) : (
