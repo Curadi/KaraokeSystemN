@@ -7,7 +7,7 @@ namespace KaraokeSystemN.Application.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "admin")] // Protege todos os endpoints neste controller
+    [Authorize(Roles = "admin")]
     public class SettingsController : ControllerBase
     {
         private readonly SettingsService _settingsService;
@@ -17,11 +17,12 @@ namespace KaraokeSystemN.Application.Controllers
             _settingsService = settingsService;
         }
 
-        // DTO para o request de atualização de configurações
         public class UpdateSettingsRequest
         {
             public bool PreventDuplicates { get; set; }
             public int CooldownHours { get; set; }
+            // Nova propriedade para o tempo de confirmação
+            public int ConfirmationTimeoutSeconds { get; set; }
         }
 
         [HttpGet]
@@ -29,22 +30,20 @@ namespace KaraokeSystemN.Application.Controllers
         {
             var preventDuplicates = await _settingsService.IsDuplicateUserPreventionEnabledAsync();
             var cooldownHours = await _settingsService.GetSongCooldownHoursAsync();
+            var confirmationTimeoutSeconds = await _settingsService.GetConfirmationTimeoutSecondsAsync();
 
-            return Ok(new { preventDuplicates, cooldownHours });
+            return Ok(new { preventDuplicates, cooldownHours, confirmationTimeoutSeconds });
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateSettings([FromBody] UpdateSettingsRequest request)
         {
-            // Usa os nomes de método corretos do SettingsService
             await _settingsService.SetDuplicateUserPreventionAsync(request.PreventDuplicates);
             await _settingsService.SetSongCooldownHoursAsync(request.CooldownHours);
+            await _settingsService.SetConfirmationTimeoutSecondsAsync(request.ConfirmationTimeoutSeconds);
 
             return Ok(new { message = "Configurações guardadas com sucesso." });
         }
     }
 }
-
-
-
 

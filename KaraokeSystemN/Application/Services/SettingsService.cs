@@ -7,7 +7,9 @@ namespace KaraokeSystemN.Application.Services
     {
         private readonly ISettingsRepository _settingsRepository;
         private const string PreventDuplicatesKey = "PreventDuplicateUserInQueue";
-        private const string SongCooldownHoursKey = "SongCooldownHours";
+        private const string SongCooldownKey = "SongCooldownHours";
+        // Nova constante para a chave de configuração
+        private const string ConfirmationTimeoutKey = "ConfirmationTimeoutSeconds";
 
         public SettingsService(ISettingsRepository settingsRepository)
         {
@@ -26,18 +28,37 @@ namespace KaraokeSystemN.Application.Services
             await _settingsRepository.UpdateSettingAsync(PreventDuplicatesKey, isEnabled.ToString().ToLower());
         }
 
-        // --- MÉTODO QUE ESTAVA EM FALTA ---
         public async Task<int> GetSongCooldownHoursAsync()
         {
-            var setting = await _settingsRepository.GetSettingByKeyAsync(SongCooldownHoursKey);
-            // Se não estiver definido, o padrão é 0 (sem cooldown)
-            if (setting == null) return 0;
-            return int.TryParse(setting.Value, out var hours) ? hours : 0;
+            var setting = await _settingsRepository.GetSettingByKeyAsync(SongCooldownKey);
+            if (setting == null || !int.TryParse(setting.Value, out var hours))
+            {
+                return 0;
+            }
+            return hours;
         }
 
         public async Task SetSongCooldownHoursAsync(int hours)
         {
-            await _settingsRepository.UpdateSettingAsync(SongCooldownHoursKey, hours.ToString());
+            await _settingsRepository.UpdateSettingAsync(SongCooldownKey, hours.ToString());
+        }
+
+        // --- NOVO MÉTODO PARA OBTER O TEMPO DE CONFIRMAÇÃO ---
+        public async Task<int> GetConfirmationTimeoutSecondsAsync()
+        {
+            var setting = await _settingsRepository.GetSettingByKeyAsync(ConfirmationTimeoutKey);
+            // Se a configuração não existir, retorna 20 como padrão.
+            if (setting == null || !int.TryParse(setting.Value, out var seconds))
+            {
+                return 20;
+            }
+            return seconds;
+        }
+
+        // --- NOVO MÉTODO PARA DEFINIR O TEMPO DE CONFIRMAÇÃO ---
+        public async Task SetConfirmationTimeoutSecondsAsync(int seconds)
+        {
+            await _settingsRepository.UpdateSettingAsync(ConfirmationTimeoutKey, seconds.ToString());
         }
     }
 }

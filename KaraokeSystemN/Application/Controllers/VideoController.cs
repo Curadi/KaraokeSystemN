@@ -1,12 +1,13 @@
 ﻿using KaraokeSystemN.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO; // Necessário para Path.GetExtension
 using System.Threading.Tasks;
 
 namespace KaraokeSystemN.Application.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/videos")] // Rota corrigida para o plural
     [Authorize]
     public class VideosController : ControllerBase
     {
@@ -24,20 +25,33 @@ namespace KaraokeSystemN.Application.Controllers
             return Ok(videoFiles);
         }
 
-        // Este endpoint é para o player obter o ficheiro de vídeo
         [HttpGet("{fileName}")]
         public IActionResult GetVideoStream(string fileName)
         {
-            // CORREÇÃO: A chamada agora usa o método correto 'GetVideoStream'
             var videoStream = _videoService.GetVideoStream(fileName);
             if (videoStream == null)
             {
                 return NotFound();
             }
 
-            // Retorna o ficheiro como um stream, habilitando o range processing para permitir
-            // que o navegador avance e retroceda no vídeo.
-            return File(videoStream, "video/mp4", enableRangeProcessing: true);
+            // --- ESTA É A LÓGICA DE CORREÇÃO ---
+            // Determina o tipo de conteúdo com base na extensão do ficheiro.
+            var contentType = GetContentType(fileName);
+            return File(videoStream, contentType, enableRangeProcessing: true);
+        }
+
+        // Função auxiliar para obter o MIME type correto para cada formato de vídeo.
+        private string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".mp4" => "video/mp4",
+                ".webm" => "video/webm",
+                ".mkv" => "video/x-matroska",
+                ".mov" => "video/quicktime",
+                _ => "application/octet-stream", // Tipo genérico para outros casos
+            };
         }
     }
 }

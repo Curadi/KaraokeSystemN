@@ -13,10 +13,12 @@ namespace KaraokeSystemN.Application.Controllers
     public class QueueController : ControllerBase
     {
         private readonly QueueService _queueService;
+        private readonly SettingsService _settingsService;
 
-        public QueueController(QueueService queueService)
+        public QueueController(QueueService queueService, SettingsService settingsService)
         {
             _queueService = queueService;
+            _settingsService = settingsService;
         }
 
         public class AddToQueueRequest
@@ -47,10 +49,10 @@ namespace KaraokeSystemN.Application.Controllers
             var queueItems = await _queueService.GetQueueAsync();
             var response = queueItems.Select((item, index) => new
             {
-                Id = item.Id,
-                UserName = item.UserName,
-                SongName = item.SongName,
-                Position = index + 1
+                id = item.Id,
+                userName = item.UserName,
+                songName = item.SongName,
+                position = index + 1
             });
             return Ok(response);
         }
@@ -62,13 +64,18 @@ namespace KaraokeSystemN.Application.Controllers
             var nextItem = await _queueService.GetAndRemoveNextAsync();
             if (nextItem == null)
             {
-                // Retorna um objeto vazio com sucesso se a fila estiver vazia
                 return Ok(new { });
             }
+
+            // Busca o tempo de confirmação configurado pelo admin
+            var confirmationTimeout = await _settingsService.GetConfirmationTimeoutSecondsAsync();
+
+            // Retorna os detalhes da música E o tempo de confirmação
             return Ok(new
             {
                 songName = nextItem.SongName,
-                userName = nextItem.UserName
+                userName = nextItem.UserName,
+                confirmationTimeout // Envia o tempo para o frontend
             });
         }
     }

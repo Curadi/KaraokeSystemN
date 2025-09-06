@@ -29,7 +29,9 @@ export default function DesktopPlayer() {
             if (data && data.songName) {
                 setCurrentSong(data);
                 setStatus('confirming');
-                setCountdown(20);
+                // --- ALTERAÇÃO APLICADA AQUI ---
+                // Agora, a contagem decrescente usa o valor vindo do backend.
+                setCountdown(data.confirmationTimeout);
             }
         } catch (err) {
             console.error('Falha ao verificar a fila:', err);

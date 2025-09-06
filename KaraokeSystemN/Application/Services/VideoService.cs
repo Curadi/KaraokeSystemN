@@ -1,25 +1,47 @@
 ﻿using KaraokeSystemN.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace KaraokeSystemN.Application.Services
 {
     public class VideoService
     {
         private readonly string _videoFolderPath;
-        private readonly List<string> _supportedExtensions = new() { ".mp4", ".mkv", ".avi", ".mov", ".wmv" };
-        private readonly SettingsService _settingsService;
+        // --- LISTA DE EXTENSÕES ATUALIZADA ---
+        // Adicionamos os formatos .webm e .mkv, que são comuns na web.
+        // Removemos .avi e .wmv, que não são suportados pelos navegadores.
+        private readonly List<string> _supportedExtensions = new List<string> { ".mp4", ".webm", ".mkv", ".mov" };
         private readonly IPlayedSongLogRepository _playedSongLogRepository;
+        private readonly SettingsService _settingsService;
 
-        public VideoService(IConfiguration configuration, SettingsService settingsService, IPlayedSongLogRepository playedSongLogRepository)
+        public VideoService(IConfiguration configuration, IPlayedSongLogRepository playedSongLogRepository, SettingsService settingsService)
         {
             _videoFolderPath = configuration.GetValue<string>("VideoSettings:FolderPath") ?? string.Empty;
-            _settingsService = settingsService;
             _playedSongLogRepository = playedSongLogRepository;
+            _settingsService = settingsService;
+        }
+
+        private string? GetVideoPath(string fileName)
+        {
+            if (string.IsNullOrEmpty(_videoFolderPath) || !Directory.Exists(_videoFolderPath))
+            {
+                return null;
+            }
+            // Constrói o caminho completo e verifica se o ficheiro existe para evitar erros.
+            var filePath = Path.Combine(_videoFolderPath, fileName);
+            return File.Exists(filePath) ? filePath : null;
+        }
+
+        public Stream? GetVideoStream(string fileName)
+        {
+            var filePath = GetVideoPath(fileName);
+            if (filePath == null)
+            {
+                return null;
+            }
+            return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         public async Task<IEnumerable<string>> GetAvailableVideoFilesAsync()
@@ -29,42 +51,21 @@ namespace KaraokeSystemN.Application.Services
                 return Enumerable.Empty<string>();
             }
 
-            // 1. Obter a lista completa de todos os ficheiros de vídeo na pasta.
             var allVideoFiles = Directory.EnumerateFiles(_videoFolderPath)
                 .Where(file => _supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                .Select(file => Path.GetFileName(file)!)
-                .ToList();
+                .Select(Path.GetFileName);
 
-            // 2. Obter o tempo de cooldown (em horas) das configurações.
             var cooldownHours = await _settingsService.GetSongCooldownHoursAsync();
-
-            // Se o cooldown for 0 ou menor, a regra está desligada, então retornamos todas as músicas.
             if (cooldownHours <= 0)
             {
-                return allVideoFiles;
+                return allVideoFiles.ToList();
             }
 
-            // 3. Calcular o ponto de corte no tempo.
             var cooldownThreshold = DateTime.UtcNow.AddHours(-cooldownHours);
+            var playedSongs = await _playedSongLogRepository.GetLogsSinceAsync(cooldownThreshold);
+            var playedSongNames = new HashSet<string>(playedSongs.Select(p => p.SongName));
 
-            // 4. Pedir ao repositório todas as músicas que tocaram DEPOIS desse ponto de corte.
-            var recentlyPlayedLogs = await _playedSongLogRepository.GetLogsSinceAsync(cooldownThreshold);
-            var recentlyPlayedSongs = new HashSet<string>(recentlyPlayedLogs.Select(log => log.SongName));
-
-            // 5. Filtrar a lista completa, removendo as músicas que estão na lista de "tocadas recentemente".
-            var availableSongs = allVideoFiles.Where(song => !recentlyPlayedSongs.Contains(song)).ToList();
-
-            return availableSongs;
-        }
-
-        public Stream? GetVideoStream(string fileName)
-        {
-            var filePath = Path.Combine(_videoFolderPath, fileName);
-            if (!File.Exists(filePath))
-            {
-                return null;
-            }
-            return new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            return allVideoFiles.Where(fileName => !playedSongNames.Contains(fileName)).ToList();
         }
     }
 }
