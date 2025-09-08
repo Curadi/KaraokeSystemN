@@ -55,7 +55,6 @@ const LoginComponent = ({ setLoggedIn, setMessage }) => {
             localStorage.setItem('karaoke_username', data.username);
 
             setLoggedIn(true);
-            setMessage(`Login bem-sucedido! Redirecionando em ${countdown}...`);
             setIsRedirecting(true); // Inicia o processo de redirecionamento
 
         } catch (error) {
@@ -200,10 +199,10 @@ export default function Home() {
             <main className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
                 <div>
                     <h1 className="text-3xl font-bold mb-4 text-gray-800">
-                        Bem-vindo ao <span className="text-blue-600">Karaokê</span>!
+                        Bem-vindo ao <span className="text-blue-600">Karaokê System</span>!
                     </h1>
                     <p className="mb-6 text-gray-600">
-                        Faça login ou cadastre-se para entrar na fila de músicas.
+                        Faça login ou cadastre-se para acessar o sistema.
                     </p>
 
                     {message && (

@@ -198,10 +198,7 @@ export default function SystemSettings() {
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="font-bold text-lg text-gray-700 mb-2">Gestão de Pastas</h2>
-                    <p className="text-xs text-gray-500 mb-4">
-                        <strong>Importante:</strong> Os caminhos devem começar com <code>/</code> e corresponder aos volumes definidos no seu <code>docker-compose.yml</code>.
-                    </p>
+                    <h2 className="font-bold text-lg text-gray-700 mb-2">Conversor de Vídeos</h2>
                     <div className="space-y-3">
                         <div>
                             <label htmlFor="originalVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Originais</label>
@@ -217,7 +214,7 @@ export default function SystemSettings() {
                             />
                         </div>
                         <div>
-                            <label htmlFor="convertedVideosPath" className="block text-sm font-medium text-gray-600">Pasta para Vídeos Convertidos</label>
+                            <label htmlFor="convertedVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Convertidos</label>
                             <input
                                 id="convertedVideosPath"
                                 type="text"
@@ -229,11 +226,6 @@ export default function SystemSettings() {
                                 placeholder="/app/videos/converted"
                             />
                         </div>
-                    </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg mt-6">
-                    <div>
-                        <h2 className="font-bold text-lg text-gray-700">Manutenção de Vídeos</h2>
                         <p className="text-sm text-gray-500 mb-4">
                             Clique no botão abaixo para converter todos os vídeos para um formato compatível.
                         </p>
@@ -255,7 +247,7 @@ export default function SystemSettings() {
                         &larr; Voltar ao Menu Principal
                     </button>
                     <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">
-                        {isSaving ? 'A guardar...' : 'Guardar e Sair'}
+                        {isSaving ? 'Salvando...' : 'Salvar e Sair'}
                     </button>
                 </div>
             </div>
