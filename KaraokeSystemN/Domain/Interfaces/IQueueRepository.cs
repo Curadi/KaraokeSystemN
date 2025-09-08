@@ -11,6 +11,7 @@ namespace KaraokeSystemN.Domain.Interfaces
         Task<bool> ExistsByUsernameAsync(string username);
         Task<QueueItem?> GetNextAsync();
         Task RemoveAsync(QueueItem item);
+        Task<QueueItem?> GetByIdAsync(int id);
     }
 }
 

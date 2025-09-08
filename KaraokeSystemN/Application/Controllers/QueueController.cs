@@ -78,6 +78,18 @@ namespace KaraokeSystemN.Application.Controllers
                 confirmationTimeout // Envia o tempo para o frontend
             });
         }
+        
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> RemoveFromQueue(int id)
+        {
+            var success = await _queueService.RemoveByIdAsync(id);
+            if (!success)
+            {
+                return NotFound(new { message = "Item não encontrado na fila." });
+            }
+            return Ok(new { message = "Item removido da fila com sucesso." });
+        }
     }
 }
 

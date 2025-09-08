@@ -145,6 +145,7 @@ export default function SystemSettings() {
                 {error && <p className="mb-4 p-3 text-center rounded-md bg-red-100 text-red-700">{error}</p>}
 
                 <div className="space-y-6">
+                    {/* Regra de Duplicados */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -163,6 +164,8 @@ export default function SystemSettings() {
                             </label>
                         </div>
                     </div>
+
+                    {/* Regra de Cooldown */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -179,6 +182,8 @@ export default function SystemSettings() {
                             />
                         </div>
                     </div>
+
+                    {/* Tempo de Confirmação */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -195,50 +200,55 @@ export default function SystemSettings() {
                             />
                         </div>
                     </div>
-                </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="font-bold text-lg text-gray-700 mb-2">Conversor de Vídeos</h2>
-                    <div className="space-y-3">
-                        <div>
-                            <label htmlFor="originalVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Originais</label>
-                            <input
-                                id="originalVideosPath"
-                                type="text"
-                                name="originalVideosPath"
-                                value={settings.originalVideosPath}
-                                onChange={handleChange}
-                                className="w-full mt-1 p-2 border rounded-md"
-                                // --- PLACEHOLDER ADICIONADO AQUI ---
-                                placeholder="/app/videos"
-                            />
+                    {/* --- BLOCO DE GESTÃO E MANUTENÇÃO DE VÍDEOS UNIFICADO --- */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <h2 className="font-bold text-lg text-gray-700 mb-2">Conversor de Vídeos</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <label htmlFor="originalVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Originais</label>
+                                        <input
+                                            id="originalVideosPath"
+                                            type="text"
+                                            name="originalVideosPath"
+                                            value={settings.originalVideosPath}
+                                            onChange={handleChange}
+                                            className="w-full mt-1 p-2 border rounded-md"
+                                            placeholder="/app/videos"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="convertedVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Convertidos</label>
+                                        <input
+                                            id="convertedVideosPath"
+                                            type="text"
+                                            name="convertedVideosPath"
+                                            value={settings.convertedVideosPath}
+                                            onChange={handleChange}
+                                            className="w-full mt-1 p-2 border rounded-md"
+                                            placeholder="/app/videos/converted"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="border-t pt-4">
+                                <p className="text-sm text-gray-500 mb-4">
+                                    Clique no botão abaixo para converter todos os vídeos para um formato compatível.
+                                </p>
+                                <button
+                                    onClick={handleConvertVideos}
+                                    disabled={isConverting}
+                                    className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                                >
+                                    {isConverting ? 'Conversão em progresso...' : 'Iniciar Conversão de Vídeos'}
+                                </button>
+                                {(isConverting || conversionStatus !== 'Ocioso') &&
+                                    <p className="mt-3 text-sm text-center text-gray-600 font-medium">{conversionStatus}</p>
+                                }
+                            </div>
                         </div>
-                        <div>
-                            <label htmlFor="convertedVideosPath" className="block text-sm font-medium text-gray-600">Pasta de Vídeos Convertidos</label>
-                            <input
-                                id="convertedVideosPath"
-                                type="text"
-                                name="convertedVideosPath"
-                                value={settings.convertedVideosPath}
-                                onChange={handleChange}
-                                className="w-full mt-1 p-2 border rounded-md"
-                                // --- PLACEHOLDER ADICIONADO AQUI ---
-                                placeholder="/app/videos/converted"
-                            />
-                        </div>
-                        <p className="text-sm text-gray-500 mb-4">
-                            Clique no botão abaixo para converter todos os vídeos para um formato compatível.
-                        </p>
-                        <button
-                            onClick={handleConvertVideos}
-                            disabled={isConverting}
-                            className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                        >
-                            {isConverting ? 'Conversão em progresso...' : 'Iniciar Conversão de Vídeos'}
-                        </button>
-                        {(isConverting || conversionStatus !== 'Ocioso') &&
-                            <p className="mt-3 text-sm text-center text-gray-600 font-medium">{conversionStatus}</p>
-                        }
                     </div>
                 </div>
 

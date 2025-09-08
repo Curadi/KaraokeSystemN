@@ -1,17 +1,6 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
-
-// Função auxiliar para decodificar o token e extrair a role
-const getUserRole = (token) => {
-    if (!token) return null;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.role;
-    } catch (e) {
-        return null;
-    }
-};
+import { jwtDecode } from 'jwt-decode';
 
 export default function Home() {
     const [username, setUsername] = useState('');
@@ -20,56 +9,77 @@ export default function Home() {
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
-        const storedUsername = localStorage.getItem('karaoke_username');
-        const role = getUserRole(token);
-
         if (!token) {
             router.push('/');
             return;
         }
 
-        setUsername(storedUsername || 'Usuário');
-        if (role === 'admin') {
-            setIsAdmin(true);
+        try {
+            const decodedToken = jwtDecode(token);
+            setUsername(decodedToken.unique_name || 'Utilizador');
+            setIsAdmin(decodedToken.role === 'admin');
+        } catch (e) {
+            console.error("Token inválido:", e);
+            // Se o token for inválido, limpa e volta para o login
+            localStorage.removeItem('authToken');
+            router.push('/');
         }
     }, [router]);
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
-        localStorage.removeItem('karaoke_username');
         router.push('/');
     };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-            <main className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-                <div className="absolute top-4 right-4">
+            <main className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg text-center">
+                <h1 className="text-3xl font-bold mb-4 text-gray-800">
+                    Bem-vindo, <span className="text-blue-600">{username}</span>!
+                </h1>
+                <p className="mb-8 text-gray-600">O que gostaria de fazer agora?</p>
+
+                <div className="space-y-4">
+                    <button
+                        onClick={() => router.push('/songs')}
+                        className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors text-lg"
+                    >
+                        Selecionar Música
+                    </button>
+                    <button
+                        onClick={() => router.push('/queue')}
+                        className="w-full bg-gray-600 text-white font-bold py-3 px-6 rounded-md hover:bg-gray-700 transition-colors text-lg"
+                    >
+                        Ver Fila de Espera
+                    </button>
+
+                    {/* --- BOTÕES SÓ PARA O ADMIN --- */}
+                    {isAdmin && (
+                        <div className="pt-4 border-t mt-4 space-y-4">
+                            <button
+                                onClick={() => router.push('/systemsettings')}
+                                className="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-md hover:bg-purple-700 transition-colors text-lg"
+                            >
+                                Configurações do Sistema
+                            </button>
+                            {/* --- NOVO BOTÃO ADICIONADO AQUI --- */}
+                            <button
+                                onClick={() => window.open('/desktop-player', '_blank')}
+                                className="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-md hover:bg-teal-700 transition-colors text-lg"
+                            >
+                                Video Player
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-8">
                     <button
                         onClick={handleLogout}
-                        className="text-sm text-red-500 hover:text-red-700 hover:underline font-semibold"
+                        className="text-red-500 hover:text-red-700 hover:underline font-medium"
                     >
                         Sair
                     </button>
-                </div>
-
-                <h1 className="text-3xl font-bold mb-2 text-gray-800">Olá, <span className="text-blue-600">{username}</span>!</h1>
-                <p className="text-gray-600 mb-8">O que você gostaria de fazer?</p>
-
-                <div className="flex flex-col space-y-4">
-                    <Link href="/songs" passHref>
-                        <a className="bg-blue-600 text-white font-bold py-4 px-6 rounded-md hover:bg-blue-700 transition-colors text-lg">
-                            Selecionar Música
-                        </a>
-                    </Link>
-
-                    {/* O link agora aponta para a nova página '/systemsettings' */}
-                    {isAdmin && (
-                        <Link href="/systemsettings" passHref>
-                            <a className="bg-gray-700 text-white font-bold py-4 px-6 rounded-md hover:bg-gray-800 transition-colors text-lg">
-                                Painel de Configurações
-                            </a>
-                        </Link>
-                    )}
                 </div>
             </main>
         </div>

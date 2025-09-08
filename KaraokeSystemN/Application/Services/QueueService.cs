@@ -59,6 +59,17 @@ namespace KaraokeSystemN.Application.Services
             // Retorna o item que foi encontrado (ou nulo se a fila estiver vazia)
             return nextItem;
         }
+
+        public async Task<bool> RemoveByIdAsync(int id)
+        {
+            var itemToRemove = await _queueRepository.GetByIdAsync(id);
+            if (itemToRemove != null)
+            {
+                await _queueRepository.RemoveAsync(itemToRemove);
+                return true;
+            }
+            return false;
+        }
     }
 }
 

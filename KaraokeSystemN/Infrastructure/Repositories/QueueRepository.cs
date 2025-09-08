@@ -43,6 +43,10 @@ namespace KaraokeSystemN.Infrastructure.Repositories
             _context.QueueItems.Remove(item);
             await _context.SaveChangesAsync();
         }
+        public async Task<QueueItem?> GetByIdAsync(int id)
+        {
+            return await _context.QueueItems.FindAsync(id);
+        }
     }
 }
 
