@@ -26,17 +26,18 @@ namespace KaraokeSystemN.Application.Controllers
         }
 
         [HttpGet("{fileName}")]
-        public IActionResult GetVideoStream(string fileName)
+        // --- CORREÇÃO AQUI ---
+        // O método agora é 'async' e espera ('await') pelo resultado do serviço.
+        public async Task<IActionResult> GetVideoStream(string fileName)
         {
-            var videoStream = _videoService.GetVideoStream(fileName);
+            var videoStream = await _videoService.GetVideoStream(fileName);
             if (videoStream == null)
             {
                 return NotFound();
             }
 
-            // --- ESTA É A LÓGICA DE CORREÇÃO ---
-            // Determina o tipo de conteúdo com base na extensão do ficheiro.
-            var contentType = GetContentType(fileName);
+            // Como a conversão garante o formato .mp4, podemos definir o tipo de conteúdo de forma segura.
+            var contentType = "video/mp4";
             return File(videoStream, contentType, enableRangeProcessing: true);
         }
 

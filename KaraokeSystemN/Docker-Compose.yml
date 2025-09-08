@@ -49,10 +49,13 @@ services:
       # Garante que o serviço 'db' inicie e esteja SAUDÁVEL antes do backend
       db:
         condition: service_healthy
-    # --- ADICIONADO VOLUME PARA VIDEOS AQUI ---
+    # --- VOLUMES PARA OS VÍDEOS ---
     volumes:
       # Mapeia a pasta 'Videos' na raiz do projeto para '/app/videos' dentro do contêiner
       - ./Videos:/app/videos
+      # --- NOVA LINHA ADICIONADA AQUI ---
+      # Mapeia a pasta 'ConvertedVideos' para '/app/videos/converted' dentro do contêiner
+      - ./ConvertedVideos:/app/videos/converted
 
   # Serviço do frontend em Next.js
   frontend:

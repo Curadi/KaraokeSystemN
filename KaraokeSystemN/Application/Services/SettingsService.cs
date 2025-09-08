@@ -10,6 +10,8 @@ namespace KaraokeSystemN.Application.Services
         private const string SongCooldownKey = "SongCooldownHours";
         // Nova constante para a chave de configuração
         private const string ConfirmationTimeoutKey = "ConfirmationTimeoutSeconds";
+        private const string OriginalVideosPathKey = "OriginalVideosPath";
+        private const string ConvertedVideosPathKey = "ConvertedVideosPath";
 
         public SettingsService(ISettingsRepository settingsRepository)
         {
@@ -60,6 +62,31 @@ namespace KaraokeSystemN.Application.Services
         {
             await _settingsRepository.UpdateSettingAsync(ConfirmationTimeoutKey, seconds.ToString());
         }
+        public async Task<string> GetOriginalVideosPathAsync()
+        {
+            var setting = await _settingsRepository.GetSettingByKeyAsync(OriginalVideosPathKey);
+            // Retorna o caminho guardado ou um caminho padrão de dentro do contentor
+            return setting?.Value ?? "/app/videos";
+        }
+
+        public async Task<string> GetConvertedVideosPathAsync()
+        {
+            var setting = await _settingsRepository.GetSettingByKeyAsync(ConvertedVideosPathKey);
+            // Retorna o caminho guardado ou um caminho padrão de dentro do contentor
+            return setting?.Value ?? "/app/videos/converted";
+        }
+
+        // --- NOVOS MÉTODOS PARA DEFINIR OS CAMINHOS ---
+        public async Task SetOriginalVideosPathAsync(string path)
+        {
+            await _settingsRepository.UpdateSettingAsync(OriginalVideosPathKey, path);
+        }
+
+        public async Task SetConvertedVideosPathAsync(string path)
+        {
+            await _settingsRepository.UpdateSettingAsync(ConvertedVideosPathKey, path);
+        }
+
     }
 }
 

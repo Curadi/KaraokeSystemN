@@ -1,15 +1,17 @@
-# Dockerfile para a aplicação ASP.NET Core (Backend)
-
-# Etapa 1: Build da aplicação
+# Etapa 1: Construir a aplicação
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 
-# Copia e restaura as dependências do projeto
+# --- ESTA É A CORREÇÃO PRINCIPAL ---
+# Usamos 'apt-get' para atualizar os pacotes e instalar o FFmpeg no ambiente de build.
+RUN apt-get update && apt-get install -y ffmpeg
+
+# Copia o ficheiro do projeto e restaura as dependências
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copia todo o código fonte da aplicação
-COPY . .
+# Copia o resto do código fonte
+COPY . ./
 
 # Publica a aplicação em modo de "release"
 RUN dotnet publish -c Release -o out
@@ -19,8 +21,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Expõe a porta que a aplicação vai escutar
+# --- CORREÇÃO APLICADA AQUI TAMBÉM ---
+# Garante que o FFmpeg também está disponível no ambiente de execução final.
+RUN apt-get update && apt-get install -y ffmpeg
+
+# Expõe a porta que a aplicação irá usar
 EXPOSE 8080
 
-# Inicia a aplicação. Define a URL de escuta
-ENTRYPOINT ["dotnet", "KaraokeSystemN.dll", "--urls", "http://0.0.0.0:8080"]
+# O comando para iniciar a aplicação
+ENTRYPOINT ["dotnet", "KaraokeSystemN.dll"]

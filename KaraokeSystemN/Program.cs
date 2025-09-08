@@ -62,6 +62,8 @@ builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 builder.Services.AddScoped<SettingsService>();
 // --- LINHA EM FALTA ADICIONADA AQUI ---
 builder.Services.AddScoped<IPlayedSongLogRepository, PlayedSongLogRepository>();
+builder.Services.AddScoped<VideoConversionService>();
+builder.Services.AddSingleton<ConversionStatusService>();
 
 
 var app = builder.Build();
