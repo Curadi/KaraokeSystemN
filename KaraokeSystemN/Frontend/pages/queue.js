@@ -7,6 +7,8 @@ export default function Queue() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    // --- ESTADO ADICIONADO PARA GUARDAR O NOME DO UTILIZADOR ATUAL ---
+    const [currentUsername, setCurrentUsername] = useState('');
     const router = useRouter();
 
     useEffect(() => {
@@ -15,11 +17,18 @@ export default function Queue() {
             try {
                 const decodedToken = jwtDecode(token);
                 setIsAdmin(decodedToken.role === 'admin');
+                // Guarda o nome de utilizador do token para comparações futuras
+                setCurrentUsername(decodedToken.unique_name);
             } catch (e) {
                 console.error("Token inválido:", e);
             }
         }
     }, []);
+
+    const handleChangeSong = () => {
+        // Redireciona para a página de seleção em "modo de troca"
+        router.push('/songs?change=true');
+    };
 
     const fetchQueue = async () => {
         const token = localStorage.getItem('authToken');
@@ -53,7 +62,6 @@ export default function Queue() {
         return () => clearInterval(interval);
     }, [router]);
 
-    // --- NOVA FUNÇÃO PARA REMOVER UM ITEM DA FILA ---
     const handleRemove = async (id) => {
         const token = localStorage.getItem('authToken');
         try {
@@ -66,12 +74,9 @@ export default function Queue() {
                 const errorData = await response.json().catch(() => null);
                 throw new Error(errorData?.message || 'Não foi possível remover o item.');
             }
-
-            // Força a atualização da lista imediatamente após a remoção
             await fetchQueue();
         } catch (err) {
             setError(err.message);
-            // Limpa a mensagem de erro após alguns segundos
             setTimeout(() => setError(''), 5000);
         }
     };
@@ -96,16 +101,30 @@ export default function Queue() {
                                                 <p className="text-sm text-gray-500">por: {item.userName}</p>
                                             </div>
                                         </div>
-                                        {/* O botão agora aparece para o admin em qualquer posição */}
-                                        {isAdmin && (
-                                            <button
-                                                onClick={() => handleRemove(item.id)}
-                                                className="bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600 transition-opacity opacity-0 group-hover:opacity-100"
-                                                title="Remover da fila"
-                                            >
-                                                Remover
-                                            </button>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            {/* --- BOTÃO DE TROCA ADICIONADO AQUI --- */}
+                                            {/* Aparece se o item da fila pertence ao utilizador logado E não é admin */}
+                                            {item.userName === currentUsername && !isAdmin && (
+                                                <button
+                                                    onClick={handleChangeSong}
+                                                    className="bg-yellow-500 text-white font-bold py-1 px-3 rounded-md hover:bg-yellow-600 transition-opacity opacity-0 group-hover:opacity-100"
+                                                    title="Trocar de Música"
+                                                >
+                                                    Trocar
+                                                </button>
+                                            )}
+
+                                            {/* O botão de remover para o admin */}
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => handleRemove(item.id)}
+                                                    className="bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600 transition-opacity opacity-0 group-hover:opacity-100"
+                                                    title="Remover da fila"
+                                                >
+                                                    Remover
+                                                </button>
+                                            )}
+                                        </div>
                                     </li>
                                 )
                             ))}
@@ -123,4 +142,3 @@ export default function Queue() {
         </div>
     );
 }
-

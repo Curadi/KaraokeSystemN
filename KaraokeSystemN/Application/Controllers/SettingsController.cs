@@ -17,12 +17,10 @@ namespace KaraokeSystemN.Application.Controllers
         public SettingsController(
             SettingsService settingsService,
             VideoConversionService videoConversionService,
-            ConversionStatusService statusService) // Adicionado aqui
+            ConversionStatusService statusService) 
         {
             _settingsService = settingsService;
             _videoConversionService = videoConversionService;
-            // --- CORREÇÃO AQUI ---
-            // O serviço de estado agora é inicializado corretamente.
             _statusService = statusService;
         }
 
@@ -62,9 +60,7 @@ namespace KaraokeSystemN.Application.Controllers
         [HttpPost("convert-videos")]
         public IActionResult ConvertVideos()
         {
-            // --- CORREÇÃO AQUI ---
-            // Atualizamos o estado imediatamente para evitar a "race condition".
-            _statusService.UpdateStatus("Pedido de conversão recebido. A iniciar...");
+            _statusService.UpdateStatus("Pedido de conversão recebido. Iniciando...");
             _ = _videoConversionService.StartConversionProcessAsync();
             return Ok(new { message = "O processo de conversão de vídeos foi iniciado." });
         }

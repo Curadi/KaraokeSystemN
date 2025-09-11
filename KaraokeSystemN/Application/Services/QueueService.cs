@@ -1,7 +1,7 @@
 ﻿using KaraokeSystemN.Domain.Entities;
 using KaraokeSystemN.Domain.Interfaces;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Importante: Adicionar esta referência para usar .FirstOrDefault()
 using System.Threading.Tasks;
 
 namespace KaraokeSystemN.Application.Services
@@ -22,41 +22,57 @@ namespace KaraokeSystemN.Application.Services
             return _queueRepository.GetQueueAsync();
         }
 
-        public async Task<bool> AddToQueueAsync(string userName, string songName)
+        // Este é o método inteligente que o frontend usa para adicionar ou trocar
+        public async Task SetUserSongAsync(string userName, string songName)
         {
             var isDuplicatePreventionEnabled = await _settingsService.IsDuplicateUserPreventionEnabledAsync();
-            var userAlreadyInQueue = await _queueRepository.ExistsByUsernameAsync(userName);
+            var userQueueItems = await _queueRepository.GetByUsernameAsync(userName);
+            var firstItem = userQueueItems.FirstOrDefault();
 
-            if (isDuplicatePreventionEnabled && userAlreadyInQueue)
+            if (firstItem != null && isDuplicatePreventionEnabled)
             {
-                return false;
+                // Se a regra de duplicados estiver ativa, troca a primeira música
+                firstItem.SongName = songName;
+                await _queueRepository.UpdateAsync(firstItem);
             }
-
-            var newItem = new QueueItem
+            else
             {
-                UserName = userName,
-                SongName = songName
-            };
-            await _queueRepository.AddToQueueAsync(newItem);
-
-            return true;
+                // Se a regra estiver inativa, ou se o utilizador não tiver músicas, adiciona uma nova
+                var newItem = new QueueItem { UserName = userName, SongName = songName };
+                await _queueRepository.AddToQueueAsync(newItem);
+            }
         }
 
-        // --- MÉTODO CORRIGIDO E REINTRODUZIDO ---
-        // Este método agora contém a lógica completa para buscar e remover
-        // o próximo item da fila, como o controller espera.
+        public async Task<IEnumerable<QueueItem>> GetUserSongsAsync(string userName)
+        {
+            return await _queueRepository.GetByUsernameAsync(userName);
+        }
+
+        // --- ESTE É O MÉTODO CORRIGIDO DA SUA IMAGEM ---
+        public async Task<bool> ChangeSongAsync(string userName, string newSongName)
+        {
+            // Busca a LISTA de músicas do utilizador.
+            var userQueueItems = await _queueRepository.GetByUsernameAsync(userName);
+            // Pega o primeiro item da lista para o atualizar.
+            var itemToChange = userQueueItems.FirstOrDefault();
+
+            if (itemToChange != null)
+            {
+                itemToChange.SongName = newSongName;
+                await _queueRepository.UpdateAsync(itemToChange);
+                return true; // Sucesso
+            }
+            return false; // Utilizador não encontrado na fila
+        }
+
+        // Outros métodos de serviço que já tínhamos implementado
         public async Task<QueueItem?> GetAndRemoveNextAsync()
         {
-            // Primeiro, busca o próximo item do repositório
             var nextItem = await _queueRepository.GetNextAsync();
-
-            // Se um item for encontrado, remove-o do repositório
             if (nextItem != null)
             {
                 await _queueRepository.RemoveAsync(nextItem);
             }
-
-            // Retorna o item que foi encontrado (ou nulo se a fila estiver vazia)
             return nextItem;
         }
 

@@ -47,6 +47,21 @@ namespace KaraokeSystemN.Infrastructure.Repositories
         {
             return await _context.QueueItems.FindAsync(id);
         }
+
+        public async Task<IEnumerable<QueueItem>> GetByUsernameAsync(string username)
+        {
+            return await _context.QueueItems
+                .Where(q => q.UserName == username)
+                .OrderBy(q => q.RequestedAt)
+                .ToListAsync();
+        }
+
+        public async Task UpdateAsync(QueueItem item)
+        {
+            _context.QueueItems.Update(item);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
 
