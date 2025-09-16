@@ -70,6 +70,10 @@ namespace KaraokeSystemN.Application.Services
         {
             return await _queueRepository.GetByUsernameAsync(userName);
         }
+        public async Task<QueueItem?> GetNextAsync()
+        {
+            return await _queueRepository.GetNextAsync();
+        }
 
         public async Task<QueueItem?> GetAndRemoveNextAsync()
         {

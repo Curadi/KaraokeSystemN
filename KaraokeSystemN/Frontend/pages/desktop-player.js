@@ -11,11 +11,11 @@ export default function DesktopPlayer() {
     const videoRef = useRef(null);
     const videoUrlRef = useRef(null);
 
-    const fetchNextSong = async () => {
+    const peekNextSong = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) { router.push('/'); return; }
 
-        console.log('A verificar a fila...');
+        console.log('Espiando a próxima música...');
         try {
             const response = await fetch('http://localhost:7001/api/player/peek-next', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -27,12 +27,9 @@ export default function DesktopPlayer() {
                 setCurrentSong(data);
                 setStatus('confirming');
                 setCountdown(data.confirmationTimeout);
-            } else {
-                setStatus('waiting');
             }
         } catch (err) {
-            console.error('Falha ao verificar a fila:', err);
-            setStatus('waiting');
+            console.error('Falha ao espiar a fila:', err);
         }
     };
 
@@ -49,9 +46,10 @@ export default function DesktopPlayer() {
             router.push('/');
             return;
         }
+
         const interval = setInterval(() => {
             if (status === 'waiting' && !document.hidden) {
-                fetchNextSong();
+                peekNextSong();
             }
         }, 5000);
         return () => clearInterval(interval);
@@ -149,7 +147,7 @@ export default function DesktopPlayer() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black text-white relative">
-            {status === 'waiting' && <h1 className="text-4xl">A aguardar o próximo cantor...</h1>}
+            {status === 'waiting' && <h1 className="text-4xl">Esperando o próximo cantor...</h1>}
             {status === 'confirming' && currentSong && (
                 <div className="text-center">
                     <h2 className="text-2xl mb-2">A seguir:</h2>

@@ -62,7 +62,7 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<IPlayedSongLogRepository, PlayedSongLogRepository>();
 builder.Services.AddScoped<VideoConversionService>();
 builder.Services.AddSingleton<ConversionStatusService>();
-
+builder.Services.AddSingleton<PlayerStatusService>();
 
 var app = builder.Build();
 
