@@ -26,8 +26,6 @@ namespace KaraokeSystemN.Application.Controllers
         }
 
         [HttpGet("{fileName}")]
-        // --- CORREÇÃO AQUI ---
-        // O método agora é 'async' e espera ('await') pelo resultado do serviço.
         public async Task<IActionResult> GetVideoStream(string fileName)
         {
             var videoStream = await _videoService.GetVideoStream(fileName);

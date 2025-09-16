@@ -36,20 +36,13 @@ export default function Songs() {
             setError('');
             try {
                 const [videosResponse, mySongResponse] = await Promise.all([
-                    fetch('http://localhost:7001/api/videos', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('http://localhost:7001/api/queue/my-song', { headers: { 'Authorization': `Bearer ${token}` } })
+                    fetch('http://localhost:7001/api/videos', { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
 
                 if (!videosResponse.ok) throw new Error('Não foi possível carregar as músicas.');
                 const videosData = await videosResponse.json();
                 setSongs(videosData);
                 setFilteredSongs(videosData);
-
-                if (!mySongResponse.ok) throw new Error('Não foi possível verificar a sua música na fila.');
-
-                const mySongsData = await mySongResponse.json();
-                // O resultado agora é sempre um array
-                setUserSongsInQueue(mySongsData);
 
             } catch (err) {
                 setError(err.message);
@@ -61,7 +54,6 @@ export default function Songs() {
         fetchData();
     }, [router]);
 
-    // Efeito para filtrar as músicas
     useEffect(() => {
         const results = songs.filter(song =>
             formatSongName(song).toLowerCase().includes(searchTerm.toLowerCase())
@@ -75,7 +67,6 @@ export default function Songs() {
         router.push('/');
     };
 
-    // A função de submissão continua a chamar o endpoint inteligente do backend
     const handleSubmitSong = async () => {
         if (!selectedSong) return;
 
@@ -121,7 +112,6 @@ export default function Songs() {
 
                 {error && <p className="mb-4 p-2 text-center rounded-md bg-red-100 text-red-700">{error}</p>}
 
-                {/* --- A INTERFACE AGORA MOSTRA UMA LISTA DAS SUAS MÚSICAS --- */}
                 {userSongsInQueue.length > 0 && (
                     <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <h2 className="font-semibold text-center text-blue-800 mb-2">As suas músicas na fila:</h2>
@@ -168,7 +158,6 @@ export default function Songs() {
                     </div>
                 </div>
 
-                {/* --- SECÇÃO DE NAVEGAÇÃO ATUALIZADA --- */}
                 <div className="mt-8 flex justify-between items-center">
                     <button
                         onClick={() => router.push('/home')}

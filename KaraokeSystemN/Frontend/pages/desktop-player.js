@@ -3,53 +3,39 @@ import { useRouter } from 'next/router';
 import { jwtDecode } from 'jwt-decode';
 
 export default function DesktopPlayer() {
-    const [status, setStatus] = useState('waiting'); // waiting, confirming, playing
+    const [status, setStatus] = useState('waiting');
     const [currentSong, setCurrentSong] = useState(null);
     const [countdown, setCountdown] = useState(20);
     const [error, setError] = useState('');
     const router = useRouter();
     const videoRef = useRef(null);
+    const videoUrlRef = useRef(null);
 
-    // Função para buscar a próxima música
     const fetchNextSong = async () => {
         const token = localStorage.getItem('authToken');
-        if (!token) {
-            router.push('/');
-            return;
-        }
+        if (!token) { router.push('/'); return; }
+
         console.log('A verificar a fila...');
         try {
-            const response = await fetch('http://localhost:7001/api/queue/next', {
+            const response = await fetch('http://localhost:7001/api/player/peek-next', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!response.ok) {
-                throw new Error(`Erro na resposta da API: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+
             const data = await response.json();
             if (data && data.songName) {
                 setCurrentSong(data);
                 setStatus('confirming');
-                // --- ALTERAÇÃO APLICADA AQUI ---
-                // Agora, a contagem decrescente usa o valor vindo do backend.
                 setCountdown(data.confirmationTimeout);
+            } else {
+                setStatus('waiting');
             }
         } catch (err) {
             console.error('Falha ao verificar a fila:', err);
+            setStatus('waiting');
         }
     };
 
-    // Efeito para a contagem decrescente
-    useEffect(() => {
-        if (status !== 'confirming') return;
-        if (countdown === 0) {
-            handleSkip();
-            return;
-        }
-        const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
-        return () => clearTimeout(timer);
-    }, [status, countdown]);
-
-    // Efeito para verificar a fila periodicamente
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (!token) return;
@@ -64,47 +50,47 @@ export default function DesktopPlayer() {
             return;
         }
         const interval = setInterval(() => {
-            if (status === 'waiting') {
+            if (status === 'waiting' && !document.hidden) {
                 fetchNextSong();
             }
         }, 5000);
         return () => clearInterval(interval);
     }, [status, router]);
 
-    const handleVideoEnd = async () => {
-        const token = localStorage.getItem('authToken');
-        try {
-            await fetch('http://localhost:7001/api/played-song-log/log', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ songName: currentSong.songName }),
-            });
-        } catch (err) {
-            console.error('ERRO ao registar a música como tocada:', err);
+    useEffect(() => {
+        if (status !== 'confirming') return;
+        if (countdown === 0) {
+            handleSkip();
+            return;
         }
-        resetPlayer();
-    };
+        const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [status, countdown]);
 
     const handleConfirm = async () => {
-        setStatus('playing');
         const token = localStorage.getItem('authToken');
+        setStatus('playing');
         try {
-            const safeSongName = encodeURIComponent(currentSong.songName);
-            const response = await fetch(`http://localhost:7001/api/videos/${safeSongName}`, {
+            const response = await fetch(`http://localhost:7001/api/player/play-next`, {
+                method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!response.ok) {
-                throw new Error(`Não foi possível carregar o vídeo (status: ${response.status})`);
-            }
-            const videoBlob = await response.blob();
+            if (!response.ok) throw new Error('Não foi possível confirmar a música para tocar.');
+
+            const songToPlay = await response.json();
+            setCurrentSong(songToPlay);
+
+            const videoResponse = await fetch(`http://localhost:7001/api/videos/${encodeURIComponent(songToPlay.songName)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!videoResponse.ok) throw new Error('Não foi possível carregar o vídeo.');
+
+            const videoBlob = await videoResponse.blob();
             if (videoRef.current) {
-                if (videoRef.current.src) {
-                    URL.revokeObjectURL(videoRef.current.src);
-                }
-                videoRef.current.src = URL.createObjectURL(videoBlob);
+                const newVideoUrl = URL.createObjectURL(videoBlob);
+                if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current);
+                videoUrlRef.current = newVideoUrl;
+                videoRef.current.src = newVideoUrl;
                 videoRef.current.play();
             }
         } catch (err) {
@@ -113,15 +99,47 @@ export default function DesktopPlayer() {
         }
     };
 
-    const handleSkip = () => {
+    const informBackendPlayerIsFree = async (skipped = false) => {
+        const token = localStorage.getItem('authToken');
+        try {
+            await fetch('http://localhost:7001/api/player/finished', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!skipped && currentSong) {
+                await fetch('http://localhost:7001/api/played-song-log/log', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ songName: currentSong.songName }),
+                });
+            }
+        } catch (err) {
+            console.error("Erro ao finalizar o ciclo do vídeo:", err);
+        }
+    };
+
+    const handleVideoEnd = async () => {
+        await informBackendPlayerIsFree(false);
+        resetPlayer();
+    };
+
+    const handleSkip = async () => {
+        await informBackendPlayerIsFree(true);
         resetPlayer();
     };
 
     const resetPlayer = () => {
         setStatus('waiting');
         setCurrentSong(null);
-        if (videoRef.current && videoRef.current.src) {
-            URL.revokeObjectURL(videoRef.current.src);
+        if (videoUrlRef.current) {
+            URL.revokeObjectURL(videoUrlRef.current);
+            videoUrlRef.current = null;
+        }
+        if (videoRef.current) {
             videoRef.current.src = '';
         }
         setError('');
@@ -131,7 +149,7 @@ export default function DesktopPlayer() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black text-white relative">
-            {status === 'waiting' && <h1 className="text-4xl">Aguardando o próximo cantor...</h1>}
+            {status === 'waiting' && <h1 className="text-4xl">A aguardar o próximo cantor...</h1>}
             {status === 'confirming' && currentSong && (
                 <div className="text-center">
                     <h2 className="text-2xl mb-2">A seguir:</h2>
@@ -147,6 +165,7 @@ export default function DesktopPlayer() {
                 ref={videoRef}
                 controls
                 onEnded={handleVideoEnd}
+                onError={(e) => { setError('Ocorreu um erro ao tentar reproduzir o vídeo.'); handleSkip(); }}
                 className={`w-full h-full ${status === 'playing' ? 'block' : 'hidden'}`}
             />
         </div>

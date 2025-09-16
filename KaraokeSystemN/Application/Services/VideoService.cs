@@ -1,9 +1,9 @@
-﻿using KaraokeSystemN.Domain.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KaraokeSystemN.Domain.Interfaces;
 
 namespace KaraokeSystemN.Application.Services
 {
@@ -11,12 +11,17 @@ namespace KaraokeSystemN.Application.Services
     {
         private readonly IPlayedSongLogRepository _playedSongLogRepository;
         private readonly SettingsService _settingsService;
+        private readonly IQueueRepository _queueRepository;
         private readonly List<string> _supportedExtensions = new List<string> { ".mp4", ".webm", ".mkv", ".mov", ".avi" };
 
-        public VideoService(IPlayedSongLogRepository playedSongLogRepository, SettingsService settingsService)
+        public VideoService(
+            IPlayedSongLogRepository playedSongLogRepository,
+            SettingsService settingsService,
+            IQueueRepository queueRepository)
         {
             _playedSongLogRepository = playedSongLogRepository;
             _settingsService = settingsService;
+            _queueRepository = queueRepository;
         }
 
         public async Task<Stream?> GetVideoStream(string fileName)
@@ -36,7 +41,6 @@ namespace KaraokeSystemN.Application.Services
         public async Task<IEnumerable<string>> GetAvailableVideoFilesAsync()
         {
             var originalVideosPath = await _settingsService.GetOriginalVideosPathAsync();
-            // Adicionamos uma verificação extra para garantir que o caminho não é nulo ou vazio
             if (string.IsNullOrEmpty(originalVideosPath) || !Directory.Exists(originalVideosPath))
             {
                 return Enumerable.Empty<string>();
@@ -45,16 +49,27 @@ namespace KaraokeSystemN.Application.Services
             var allVideoFiles = Directory.EnumerateFiles(originalVideosPath)
                 .Where(file => _supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
                 .Select(Path.GetFileName)
-                .Where(fileName => fileName != null);
+                .Where(fileName => !string.IsNullOrEmpty(fileName));
+
+            var songsInQueue = await _queueRepository.GetQueueAsync();
+            var songsInQueueNames = new HashSet<string>(songsInQueue.Select(q => q.SongName));
 
             var cooldownHours = await _settingsService.GetSongCooldownHoursAsync();
-            if (cooldownHours <= 0) return allVideoFiles.ToList()!;
-
-            var cooldownThreshold = DateTime.UtcNow.AddHours(-cooldownHours);
-            var playedSongs = await _playedSongLogRepository.GetLogsSinceAsync(cooldownThreshold);
-            var playedSongNames = new HashSet<string>(playedSongs.Select(p => p.SongName));
-
-            return allVideoFiles.Where(fileName => !playedSongNames.Contains(fileName!)).ToList();
+            var playedSongNames = new HashSet<string>();
+            if (cooldownHours > 0)
+            {
+                var cooldownThreshold = DateTime.UtcNow.AddHours(-cooldownHours);
+                var playedSongs = await _playedSongLogRepository.GetLogsSinceAsync(cooldownThreshold);
+                playedSongNames = new HashSet<string>(playedSongs.Select(p => p.SongName));
+                return allVideoFiles
+                .Where(fileName => !songsInQueueNames.Contains(fileName!))
+                .Where(fileName => !playedSongNames.Contains(fileName!))
+                .ToList();
+            }
+            else
+            {
+                return allVideoFiles;
+            }
         }
     }
 }

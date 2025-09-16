@@ -21,27 +21,62 @@ namespace KaraokeSystemN.Application.Controllers
             _settingsService = settingsService;
         }
 
-        // --- ESTE DTO (Data Transfer Object) É USADO PELO NOSSO NOVO MÉTODO ---
-        public class SetSongRequest
+        // --- DTOs (Modelos de Dados) Necessários ---
+        public class AddToQueueRequest { public string SongName { get; set; } = string.Empty; }
+        public class ChangeSongRequest { public string NewSongName { get; set; } = string.Empty; }
+        public class SetSongRequest { public string SongName { get; set; } = string.Empty; }
+        // ------------------------------------------
+
+        [HttpPost("add")]
+        public async Task<IActionResult> AddSong([FromBody] AddToQueueRequest request)
         {
-            public string SongName { get; set; } = string.Empty;
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
+
+            var success = await _queueService.AddToQueueAsync(userName, request.SongName);
+            if (!success) return Conflict(new { message = "Não foi possível adicionar a música. Verifique as regras do sistema." });
+
+            return Ok(new { message = "Música adicionada com sucesso!" });
         }
 
-        // --- ESTE É O NOVO ENDPOINT INTELIGENTE ---
-        // O frontend irá agora chamar este único endpoint para adicionar OU trocar uma música.
         [HttpPost("set-song")]
         public async Task<IActionResult> SetSong([FromBody] SetSongRequest request)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName))
-            {
-                return Unauthorized();
-            }
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
 
-            // Chamamos o método correto no serviço, que contém toda a lógica.
             await _queueService.SetUserSongAsync(userName, request.SongName);
-
             return Ok(new { message = "A sua escolha foi registada com sucesso!" });
+        }
+
+        [HttpGet("my-songs")]
+        public async Task<IActionResult> GetMySongs()
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
+
+            var songs = await _queueService.GetUserSongsAsync(userName);
+            var queue = (await _queueService.GetQueueAsync()).ToList();
+
+            var userSongsWithPosition = songs.Select(s => {
+                var queueItem = queue.FirstOrDefault(q => q.Id == s.Id);
+                var position = queueItem != null ? queue.IndexOf(queueItem) + 1 : 0;
+                return new { id = s.Id, songName = s.SongName, position };
+            });
+
+            return Ok(userSongsWithPosition);
+        }
+
+        [HttpPut("change/{id}")]
+        public async Task<IActionResult> ChangeSpecificSong(int id, [FromBody] ChangeSongRequest request)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
+
+            var success = await _queueService.ChangeSpecificSongAsync(id, request.NewSongName, userName);
+            if (!success) return Forbid("Não foi possível trocar a música. Verifique se a música lhe pertence.");
+
+            return Ok(new { message = "Música trocada com sucesso!" });
         }
 
         [HttpGet]
@@ -58,31 +93,15 @@ namespace KaraokeSystemN.Application.Controllers
             return Ok(response);
         }
 
-        [HttpGet("my-song")]
-        public async Task<IActionResult> GetMySongs() // Renomeado para maior clareza
-        {
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName))
-            {
-                return Unauthorized();
-            }
-
-            var songs = await _queueService.GetUserSongsAsync(userName);
-            return Ok(songs.Select(s => new { songName = s.SongName }));
-        }
-
+        // --- ESTE É O MÉTODO QUE ESTAVA EM FALTA NO SEU FICHEIRO ---
         [HttpGet("next")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetNextInQueue()
         {
             var nextItem = await _queueService.GetAndRemoveNextAsync();
-            if (nextItem == null)
-            {
-                return Ok(new { });
-            }
+            if (nextItem == null) return Ok(new { });
 
             var confirmationTimeout = await _settingsService.GetConfirmationTimeoutSecondsAsync();
-
             return Ok(new
             {
                 songName = nextItem.SongName,
@@ -96,12 +115,13 @@ namespace KaraokeSystemN.Application.Controllers
         public async Task<IActionResult> RemoveFromQueue(int id)
         {
             var success = await _queueService.RemoveByIdAsync(id);
-            if (!success)
-            {
-                return NotFound(new { message = "Item não encontrado na fila." });
-            }
+            if (!success) return NotFound(new { message = "Item não encontrado na fila." });
+
             return Ok(new { message = "Item removido da fila com sucesso." });
         }
     }
 }
+
+
+
 

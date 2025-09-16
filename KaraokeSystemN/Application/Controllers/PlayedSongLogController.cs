@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 
 namespace KaraokeSystemN.Application.Controllers
 {
-    public class LogSongRequest
-    {
-        public string SongName { get; set; } = string.Empty;
-    }
-
     [ApiController]
-    [Route("api/log")]
-    [Authorize(Roles = "admin")]
+    [Route("api/played-song-log")]
+    [Authorize]
     public class PlayedSongLogController : ControllerBase
     {
         private readonly IPlayedSongLogRepository _playedSongLogRepository;
@@ -24,12 +19,19 @@ namespace KaraokeSystemN.Application.Controllers
             _playedSongLogRepository = playedSongLogRepository;
         }
 
-        [HttpPost("played")]
-        public async Task<IActionResult> LogAsPlayed([FromBody] LogSongRequest request)
+        public class LogRequest
+        {
+            public string SongName { get; set; } = string.Empty;
+        }
+
+        // Este endpoint é chamado pelo player de desktop quando um vídeo termina
+        [HttpPost("log")]
+        [Authorize(Roles = "admin")] // Apenas o player (controlado por um admin) pode registar uma música
+        public async Task<IActionResult> LogPlayedSong([FromBody] LogRequest request)
         {
             if (string.IsNullOrEmpty(request.SongName))
             {
-                return BadRequest("SongName é obrigatório.");
+                return BadRequest("O nome da música é obrigatório.");
             }
 
             var log = new PlayedSongLog
@@ -39,7 +41,8 @@ namespace KaraokeSystemN.Application.Controllers
             };
 
             await _playedSongLogRepository.AddAsync(log);
-            return Ok(new { message = "Música registada com sucesso." });
+            return Ok(new { message = "Música registada no log com sucesso." });
         }
     }
 }
+
