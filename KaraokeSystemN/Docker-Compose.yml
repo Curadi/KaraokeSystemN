@@ -67,7 +67,7 @@ services:
     restart: always
     environment:
       # A URL da API para o frontend usar
-      - NEXT_PUBLIC_API_URL=http://localhost:7001
+      - NEXT_PUBLIC_API_URL=http://192.168.1.4:7001 
     ports:
       # Mapeia a porta do container para a porta da sua máquina
       - "3000:3000"

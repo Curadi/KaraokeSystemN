@@ -17,7 +17,7 @@ export default function DesktopPlayer() {
 
         console.log('Espiando a próxima música...');
         try {
-            const response = await fetch('http://localhost:7001/api/player/peek-next', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/player/peek-next`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
@@ -69,7 +69,7 @@ export default function DesktopPlayer() {
         const token = localStorage.getItem('authToken');
         setStatus('playing');
         try {
-            const response = await fetch(`http://localhost:7001/api/player/play-next`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/player/play-next`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -78,7 +78,7 @@ export default function DesktopPlayer() {
             const songToPlay = await response.json();
             setCurrentSong(songToPlay);
 
-            const videoResponse = await fetch(`http://localhost:7001/api/videos/${encodeURIComponent(songToPlay.songName)}`, {
+            const videoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos/${encodeURIComponent(songToPlay.songName)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!videoResponse.ok) throw new Error('Não foi possível carregar o vídeo.');
@@ -100,13 +100,13 @@ export default function DesktopPlayer() {
     const informBackendPlayerIsFree = async (skipped = false) => {
         const token = localStorage.getItem('authToken');
         try {
-            await fetch('http://localhost:7001/api/player/finished', {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/player/finished`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!skipped && currentSong) {
-                await fetch('http://localhost:7001/api/played-song-log/log', {
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/played-song-log/log`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,

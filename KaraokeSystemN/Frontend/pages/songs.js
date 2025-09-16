@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const formatSongName = (fileName) => {
     if (!fileName) return '';
     return fileName.replace(/\.[^/.]+$/, "");
@@ -33,7 +35,7 @@ export default function Songs() {
             setError('');
             try {
                 const [videosResponse, mySongResponse] = await Promise.all([
-                    fetch('http://localhost:7001/api/videos', { headers: { 'Authorization': `Bearer ${token}` } })
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`, { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
 
                 if (!videosResponse.ok) throw new Error('Não foi possível carregar as músicas.');
@@ -72,7 +74,7 @@ export default function Songs() {
         const token = localStorage.getItem('authToken');
 
         try {
-            const response = await fetch('http://localhost:7001/api/queue/set-song', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/queue/set-song`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ songName: selectedSong }),

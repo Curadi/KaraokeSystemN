@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-const API_URL = 'http://localhost:7001/api/auth';
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
 
 const LoginComponent = ({ setLoggedIn, setMessage }) => {
     const [username, setUsername] = useState('');

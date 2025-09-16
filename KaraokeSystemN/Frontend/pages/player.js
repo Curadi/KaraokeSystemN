@@ -15,7 +15,7 @@ export default function Player() {
         }
 
         if (songName) {
-            setVideoUrl(`http://localhost:7001/api/videos/${encodeURIComponent(songName)}`);
+            setVideoUrl(`${process.env.NEXT_PUBLIC_API_URL}1/api/videos/${encodeURIComponent(songName)}`);
         }
     }, [songName, router]);
 
@@ -24,7 +24,7 @@ export default function Player() {
 
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://localhost:7001/api/queue/mark-as-played/${queueId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/queue/mark-as-played/${queueId}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

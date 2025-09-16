@@ -2,6 +2,8 @@
 import { useRouter } from 'next/router';
 import { jwtDecode } from 'jwt-decode';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
     const [allSongs, setAllSongs] = useState([]);
     const [filteredSongs, setFilteredSongs] = useState([]);
@@ -19,7 +21,7 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
         const token = localStorage.getItem('authToken');
         const fetchAllSongs = async () => {
             try {
-                const response = await fetch('http://localhost:7001/api/videos', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Não foi possível carregar a lista de músicas.');
@@ -48,7 +50,7 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
         const token = localStorage.getItem('authToken');
 
         try {
-            const response = await fetch(`http://localhost:7001/api/queue/change/${songToChange.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/queue/change/${songToChange.id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -158,7 +160,7 @@ export default function Queue() {
         if (!token) { router.push('/'); return; }
 
         try {
-            const response = await fetch('http://localhost:7001/api/queue', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/queue`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error('Não foi possível carregar a fila.');
@@ -180,7 +182,7 @@ export default function Queue() {
     const handleRemove = async (id) => {
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://localhost:7001/api/queue/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/queue/${id}`, {
                 method: 'DELETE', 
                 headers: { 'Authorization': `Bearer ${token}` }
             });

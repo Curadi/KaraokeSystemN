@@ -2,6 +2,8 @@
 import { useRouter } from 'next/router';
 import { jwtDecode } from 'jwt-decode';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function SystemSettings() {
     const [settings, setSettings] = useState({
         preventDuplicates: false,
@@ -38,7 +40,7 @@ export default function SystemSettings() {
         const fetchSettings = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch('http://localhost:7001/api/settings', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Não foi possível carregar as configurações.');
@@ -67,7 +69,7 @@ export default function SystemSettings() {
         setError('');
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch('http://localhost:7001/api/settings', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -93,7 +95,7 @@ export default function SystemSettings() {
     const fetchConversionStatus = async () => {
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch('http://localhost:7001/api/settings/convert-videos/status', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/convert-videos/status`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -116,7 +118,7 @@ export default function SystemSettings() {
         setConversionStatus('A iniciar o processo...');
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch('http://localhost:7001/api/settings/convert-videos', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/convert-videos`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -136,7 +138,7 @@ export default function SystemSettings() {
         };
     }, []);
 
-    if (isLoading) return <div className="text-center p-10">A carregar configurações...</div>;
+    if (isLoading) return <div className="text-center p-10">Carregando configurações...</div>;
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">

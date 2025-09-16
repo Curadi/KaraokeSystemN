@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var networkIp = "192.168.1.4";
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,11 +17,12 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs",
-        policy => policy
-            .WithOrigins("http://localhost:3000")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+        policy => {
+            policy.WithOrigins($"http://localhost:3000", $"http://{networkIp}:3000")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        });
 });
 
 var key = builder.Configuration["Jwt:Key"] ?? "JojosBizarreAdventureStarPlatinumZaWarudo#157931";
@@ -38,8 +40,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuers = new[] { builder.Configuration["Jwt:Issuer"], $"http://{networkIp}:7001" },
+        ValidAudiences = new[] { builder.Configuration["Jwt:Audience"], $"http://{networkIp}:3000" },
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
     };
 });
@@ -52,6 +54,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
+// Injeção de Dependência
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<IQueueRepository, QueueRepository>();
@@ -61,8 +64,9 @@ builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<IPlayedSongLogRepository, PlayedSongLogRepository>();
 builder.Services.AddScoped<VideoConversionService>();
-builder.Services.AddSingleton<ConversionStatusService>();
 builder.Services.AddSingleton<PlayerStatusService>();
+builder.Services.AddSingleton<ConversionStatusService>();
+
 
 var app = builder.Build();
 
@@ -77,9 +81,9 @@ if (app.Environment.IsDevelopment())
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
-        System.Console.WriteLine($"--> OCORREU UM ERRO DURANTE A MIGRAÇÃO: {ex.Message}");
+        Console.WriteLine($"--> OCORREU UM ERRO DURANTE A MIGRAÇÃO: {ex.Message}");
     }
 }
 
@@ -89,4 +93,3 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
