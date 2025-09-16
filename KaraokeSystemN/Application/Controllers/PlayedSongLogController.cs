@@ -24,9 +24,8 @@ namespace KaraokeSystemN.Application.Controllers
             public string SongName { get; set; } = string.Empty;
         }
 
-        // Este endpoint é chamado pelo player de desktop quando um vídeo termina
         [HttpPost("log")]
-        [Authorize(Roles = "admin")] // Apenas o player (controlado por um admin) pode registar uma música
+        [Authorize(Roles = "admin")] 
         public async Task<IActionResult> LogPlayedSong([FromBody] LogRequest request)
         {
             if (string.IsNullOrEmpty(request.SongName))

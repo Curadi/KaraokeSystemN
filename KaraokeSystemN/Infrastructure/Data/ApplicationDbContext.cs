@@ -14,7 +14,6 @@ namespace KaraokeSystemN.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Força nome da tabela em lowercase para evitar problemas no Postgres
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("users");

@@ -34,15 +34,12 @@ namespace KaraokeSystemN.Application.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
 
-            // --- CORREÇÃO FINAL AQUI ---
-            // Voltamos a usar o padrão 'ClaimTypes.Role'.
-            // Isso garante que o [Authorize(Roles = "admin")] funcione corretamente.
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role) // Usamos o padrão ClaimTypes.Role
+                new Claim(ClaimTypes.Role, user.Role) 
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

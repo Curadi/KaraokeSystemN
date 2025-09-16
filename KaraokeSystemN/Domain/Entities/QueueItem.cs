@@ -9,10 +9,10 @@ namespace KaraokeSystemN.Domain.Entities
         public int Id { get; set; }
 
         [Required]
-        public string UserName { get; set; } = string.Empty; // Inicializado para remover o aviso
+        public string UserName { get; set; } = string.Empty; 
 
         [Required]
-        public string SongName { get; set; } = string.Empty; // Inicializado para remover o aviso
+        public string SongName { get; set; } = string.Empty; 
 
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     }

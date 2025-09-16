@@ -15,7 +15,6 @@ export default function Player() {
         }
 
         if (songName) {
-            // CORREÇÃO: Removido 'as string' para ser JavaScript válido
             setVideoUrl(`http://localhost:7001/api/videos/${encodeURIComponent(songName)}`);
         }
     }, [songName, router]);

@@ -145,7 +145,6 @@ export default function SystemSettings() {
                 {error && <p className="mb-4 p-3 text-center rounded-md bg-red-100 text-red-700">{error}</p>}
 
                 <div className="space-y-6">
-                    {/* Regra de Duplicados */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -165,7 +164,6 @@ export default function SystemSettings() {
                         </div>
                     </div>
 
-                    {/* Regra de Cooldown */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -183,7 +181,6 @@ export default function SystemSettings() {
                         </div>
                     </div>
 
-                    {/* Tempo de Confirmação */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
                             <div>
@@ -201,7 +198,6 @@ export default function SystemSettings() {
                         </div>
                     </div>
 
-                    {/* --- BLOCO DE GESTÃO E MANUTENÇÃO DE VÍDEOS UNIFICADO --- */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <h2 className="font-bold text-lg text-gray-700 mb-2">Conversor de Vídeos</h2>
                         <div className="space-y-4">
@@ -253,7 +249,8 @@ export default function SystemSettings() {
                 </div>
 
                 <div className="mt-8 flex justify-between items-center">
-                    <button onClick={() => router.push('/home')} className="text-blue-600 hover:underline">
+                    <button onClick={() => router.push('/home')}
+                        className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition-colors">
                         &larr; Voltar ao Menu Principal
                     </button>
                     <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">

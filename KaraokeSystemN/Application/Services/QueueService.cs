@@ -31,11 +31,9 @@ namespace KaraokeSystemN.Application.Services
             return true;
         }
 
-        // --- MÉTODO EM FALTA ADICIONADO AQUI ---
         public async Task<bool> ChangeSpecificSongAsync(int queueItemId, string newSongName, string requesterUserName)
         {
             var itemToChange = await _queueRepository.GetByIdAsync(queueItemId);
-            // Verifica se o item existe E se pertence ao utilizador que fez o pedido
             if (itemToChange != null && itemToChange.UserName == requesterUserName)
             {
                 itemToChange.SongName = newSongName;
@@ -53,13 +51,11 @@ namespace KaraokeSystemN.Application.Services
 
             if (firstItem != null && isDuplicatePreventionEnabled)
             {
-                // Cenário 1: Utilizador está na fila e a regra está ATIVA -> TROCA a música
                 firstItem.SongName = songName;
                 await _queueRepository.UpdateAsync(firstItem);
             }
             else
             {
-                // Cenário 2: Utilizador não está na fila, OU a regra está INATIVA -> ADICIONA uma nova música
                 var newItem = new QueueItem { UserName = userName, SongName = songName };
                 await _queueRepository.AddToQueueAsync(newItem);
             }

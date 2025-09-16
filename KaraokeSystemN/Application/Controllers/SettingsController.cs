@@ -54,7 +54,7 @@ namespace KaraokeSystemN.Application.Controllers
             await _settingsService.SetOriginalVideosPathAsync(request.OriginalVideosPath);
             await _settingsService.SetConvertedVideosPathAsync(request.ConvertedVideosPath);
 
-            return Ok(new { message = "Configurações guardadas com sucesso." });
+            return Ok(new { message = "Configurações salvas com sucesso." });
         }
 
         [HttpPost("convert-videos")]

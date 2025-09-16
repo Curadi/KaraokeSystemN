@@ -55,7 +55,6 @@ namespace KaraokeSystemN.Application.Services
                         return;
                     }
 
-                    // --- CORREÇÃO DEFINITIVA DE CAMINHOS ---
                     const string ffmpegPath = "/usr/bin/ffmpeg";
                     if (!File.Exists(ffmpegPath))
                     {
@@ -74,7 +73,7 @@ namespace KaraokeSystemN.Application.Services
 
                         var processStartInfo = new ProcessStartInfo
                         {
-                            FileName = ffmpegPath, // Usamos o caminho absoluto para o FFmpeg
+                            FileName = ffmpegPath, 
                             Arguments = $"-i \"{originalFile}\" -c:v libx264 -c:a aac -preset fast -y \"{convertedFilePath}\"",
                             RedirectStandardError = true,
                             UseShellExecute = false,

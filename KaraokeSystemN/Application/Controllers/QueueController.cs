@@ -21,11 +21,9 @@ namespace KaraokeSystemN.Application.Controllers
             _settingsService = settingsService;
         }
 
-        // --- DTOs (Modelos de Dados) Necessários ---
         public class AddToQueueRequest { public string SongName { get; set; } = string.Empty; }
-        public class ChangeSongRequest { public string NewSongName { get; set; } = string.Empty; }
+        public class ChangeSongRequest { public string SongName { get; set; } = string.Empty; }
         public class SetSongRequest { public string SongName { get; set; } = string.Empty; }
-        // ------------------------------------------
 
         [HttpPost("add")]
         public async Task<IActionResult> AddSong([FromBody] AddToQueueRequest request)
@@ -73,8 +71,8 @@ namespace KaraokeSystemN.Application.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName)) return Unauthorized();
 
-            var success = await _queueService.ChangeSpecificSongAsync(id, request.NewSongName, userName);
-            if (!success) return Forbid("Não foi possível trocar a música. Verifique se a música lhe pertence.");
+            var success = await _queueService.ChangeSpecificSongAsync(id, request.SongName, userName);
+            if (!success) return Forbid("Não foi possível trocar a música.");
 
             return Ok(new { message = "Música trocada com sucesso!" });
         }
@@ -93,7 +91,6 @@ namespace KaraokeSystemN.Application.Controllers
             return Ok(response);
         }
 
-        // --- ESTE É O MÉTODO QUE ESTAVA EM FALTA NO SEU FICHEIRO ---
         [HttpGet("next")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetNextInQueue()
@@ -115,9 +112,9 @@ namespace KaraokeSystemN.Application.Controllers
         public async Task<IActionResult> RemoveFromQueue(int id)
         {
             var success = await _queueService.RemoveByIdAsync(id);
-            if (!success) return NotFound(new { message = "Item não encontrado na fila." });
+            if (!success) return NotFound(new { message = "Usuário não encontrado na fila." });
 
-            return Ok(new { message = "Item removido da fila com sucesso." });
+            return Ok(new { message = "Usuário removido da fila com sucesso." });
         }
     }
 }

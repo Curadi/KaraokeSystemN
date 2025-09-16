@@ -1,7 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-// Helper function para remover a extensão do nome do ficheiro
 const formatSongName = (fileName) => {
     if (!fileName) return '';
     return fileName.replace(/\.[^/.]+$/, "");
@@ -16,11 +15,9 @@ export default function Songs() {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [username, setUsername] = useState('');
-    // --- O ESTADO AGORA É UM ARRAY PARA GUARDAR MÚLTIPLAS MÚSICAS ---
     const [userSongsInQueue, setUserSongsInQueue] = useState([]);
     const router = useRouter();
 
-    // O useEffect agora busca e processa um array de músicas do utilizador
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         const storedUsername = localStorage.getItem('karaoke_username');

@@ -20,7 +20,6 @@ export default function Home() {
             setIsAdmin(decodedToken.role === 'admin');
         } catch (e) {
             console.error("Token inválido:", e);
-            // Se o token for inválido, limpa e volta para o login
             localStorage.removeItem('authToken');
             router.push('/');
         }
@@ -53,7 +52,6 @@ export default function Home() {
                         Ver Fila de Espera
                     </button>
 
-                    {/* --- BOTÕES SÓ PARA O ADMIN --- */}
                     {isAdmin && (
                         <div className="pt-4 border-t mt-4 space-y-4">
                             <button
@@ -62,7 +60,6 @@ export default function Home() {
                             >
                                 Configurações do Sistema
                             </button>
-                            {/* --- NOVO BOTÃO ADICIONADO AQUI --- */}
                             <button
                                 onClick={() => window.open('/desktop-player', '_blank')}
                                 className="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-md hover:bg-teal-700 transition-colors text-lg"
@@ -76,8 +73,7 @@ export default function Home() {
                 <div className="mt-8">
                     <button
                         onClick={handleLogout}
-                        className="text-red-500 hover:text-red-700 hover:underline font-medium"
-                    >
+                        className="bg-gray-200 text-red-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition-colors">
                         Sair
                     </button>
                 </div>

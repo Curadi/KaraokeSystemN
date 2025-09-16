@@ -12,8 +12,6 @@ namespace KaraokeSystemN.Domain.Interfaces
         Task<QueueItem?> GetNextAsync();
         Task RemoveAsync(QueueItem item);
         Task<QueueItem?> GetByIdAsync(int id);
-        // --- MÉTODO ATUALIZADO ---
-        // Agora busca uma LISTA de músicas por nome de utilizador.
         Task<IEnumerable<QueueItem>> GetByUsernameAsync(string username);
         Task UpdateAsync(QueueItem item);
     }

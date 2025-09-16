@@ -1,13 +1,13 @@
 ﻿using KaraokeSystemN.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IO; // Necessário para Path.GetExtension
+using System.IO;
 using System.Threading.Tasks;
 
 namespace KaraokeSystemN.Application.Controllers
 {
     [ApiController]
-    [Route("api/videos")] // Rota corrigida para o plural
+    [Route("api/videos")] 
     [Authorize]
     public class VideosController : ControllerBase
     {
@@ -34,12 +34,10 @@ namespace KaraokeSystemN.Application.Controllers
                 return NotFound();
             }
 
-            // Como a conversão garante o formato .mp4, podemos definir o tipo de conteúdo de forma segura.
             var contentType = "video/mp4";
             return File(videoStream, contentType, enableRangeProcessing: true);
         }
 
-        // Função auxiliar para obter o MIME type correto para cada formato de vídeo.
         private string GetContentType(string fileName)
         {
             var ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -49,7 +47,7 @@ namespace KaraokeSystemN.Application.Controllers
                 ".webm" => "video/webm",
                 ".mkv" => "video/x-matroska",
                 ".mov" => "video/quicktime",
-                _ => "application/octet-stream", // Tipo genérico para outros casos
+                _ => "application/octet-stream", 
             };
         }
     }

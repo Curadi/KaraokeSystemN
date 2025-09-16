@@ -1,8 +1,7 @@
-﻿import { useState, useEffect, Fragment } from 'react'; // Fragment é adicionado para o modal
+﻿import { useState, useEffect, Fragment } from 'react'; 
 import { useRouter } from 'next/router';
 import { jwtDecode } from 'jwt-decode';
 
-// --- NOVO COMPONENTE: O MODAL DE TROCA DE MÚSICA ---
 const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
     const [allSongs, setAllSongs] = useState([]);
     const [filteredSongs, setFilteredSongs] = useState([]);
@@ -14,7 +13,6 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
     const formatSongName = (fileName) =>
         fileName ? fileName.replace(/\.[^/.]+$/, "") : '';
 
-    // Efeito para buscar todas as músicas quando o modal abre
     useEffect(() => {
         if (!isOpen) return;
 
@@ -35,15 +33,12 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
         fetchAllSongs();
     }, [isOpen]);
 
-    // Efeito para filtrar músicas de acordo com a busca
     useEffect(() => {
         const results = allSongs.filter(song =>
             formatSongName(song).toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredSongs(results);
     }, [searchTerm, allSongs]);
-
-
 
     const handleConfirmChange = async () => {
         if (!selectedSong) return;
@@ -67,8 +62,8 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
                 throw new Error(errorData.message || 'Falha ao trocar de música.');
             }
 
-            onSongChanged(); // Atualiza a fila principal
-            onClose();       // Fecha o modal
+            onSongChanged(); 
+            onClose();       
         } catch (err) {
             setError(err.message);
         } finally {
@@ -76,7 +71,6 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
         }
     };
 
-    // Não renderiza nada se o modal não estiver aberto
     if (!isOpen) return null;
 
     return (
@@ -95,7 +89,7 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
                 <div className="flex items-center gap-4 mb-4">
                     <input
                         type="text"
-                        placeholder="Procure a nova música..."
+                        placeholder="Escolha a nova música..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="flex-grow p-2 border rounded-md"
@@ -129,7 +123,7 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
                         disabled={!selectedSong || isSubmitting}
                         className="bg-green-600 text-white px-4 py-2 rounded-md disabled:opacity-50"
                     >
-                        {isSubmitting ? 'A trocar...' : 'Confirmar Troca'}
+                        {isSubmitting ? 'Trocando...' : 'Confirmar Troca'}
                     </button>
                 </div>
             </div>
@@ -138,14 +132,12 @@ const ChangeSongModal = ({ isOpen, onClose, songToChange, onSongChanged }) => {
 };
 
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA DA FILA ---
 export default function Queue() {
     const [queue, setQueue] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     const [currentUsername, setCurrentUsername] = useState('');
-    // Estados para controlar o modal
     const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
     const [songToChange, setSongToChange] = useState(null);
     const router = useRouter();
@@ -189,7 +181,7 @@ export default function Queue() {
         const token = localStorage.getItem('authToken');
         try {
             const response = await fetch(`http://localhost:7001/api/queue/${id}`, {
-                method: 'DELETE', // Garante que o método HTTP correto seja usado
+                method: 'DELETE', 
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -198,11 +190,10 @@ export default function Queue() {
                 throw new Error(errorData?.message || 'Não foi possível remover o item.');
             }
 
-            // Força a atualização da lista imediatamente após a remoção bem-sucedida
             await fetchQueue();
         } catch (err) {
             setError(err.message);
-            setTimeout(() => setError(''), 5000); // Limpa a mensagem de erro após alguns segundos
+            setTimeout(() => setError(''), 5000); 
         }
     };
 
@@ -225,7 +216,7 @@ export default function Queue() {
                 isOpen={isChangeModalOpen}
                 onClose={closeChangeModal}
                 songToChange={songToChange}
-                onSongChanged={fetchQueue} // Força a atualização da fila após a troca
+                onSongChanged={fetchQueue} 
             />
             <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
                 <main className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
@@ -244,17 +235,15 @@ export default function Queue() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                {/* --- BOTÃO DE TROCA ATUALIZADO --- */}
                                                 {item.userName === currentUsername && !isAdmin && (
                                                     <button
                                                         onClick={() => openChangeModal(item)}
-                                                        className="bg-yellow-500 text-white font-bold py-1 px-3 rounded-md hover:bg-yellow-600"
+                                                        className="bg-yellow-500 text-white font-bold py-1 px-3 rounded-md hover:bg-yellow-600 transition-opacity opacity-0 group-hover:opacity-100"
                                                         title="Trocar de Música"
                                                     >
                                                         Trocar
                                                     </button>
                                                 )}
-                                                {/* O botão de remover para o admin */}
                                                 {isAdmin && (
                                                     <button
                                                         onClick={() => handleRemove(item.id)}
@@ -274,7 +263,8 @@ export default function Queue() {
                         )}
                     </div>
                     <div className="mt-6 flex justify-center">
-                        <button onClick={() => router.push('/songs')} className="text-blue-600 hover:underline">
+                        <button onClick={() => router.push('/songs')}
+                            className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition-colors">
                             &larr; Voltar para a Seleção
                         </button>
                     </div>

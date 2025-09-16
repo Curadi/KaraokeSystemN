@@ -8,10 +8,10 @@ namespace KaraokeSystemN.Domain.Entities
         public int Id { get; set; }
 
         [Required]
-        public string Username { get; set; } = string.Empty; // Inicializado para remover o aviso
+        public string Username { get; set; } = string.Empty; 
 
         [Required]
-        public string PasswordHash { get; set; } = string.Empty; // Inicializado para remover o aviso
+        public string PasswordHash { get; set; } = string.Empty; 
 
         [Required]
         public string Role { get; set; } = "user";

@@ -20,14 +20,12 @@ namespace KaraokeSystemN.Infrastructure.Repositories
 
         public async Task AddAsync(PlayedSongLog log)
         {
-            // CORREÇÃO: Aceder à propriedade correta 'PlayedSongLogs'
             await _context.PlayedSongLogs.AddAsync(log);
             await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<PlayedSongLog>> GetLogsSinceAsync(DateTime timestamp)
         {
-            // CORREÇÃO: Aceder à propriedade correta 'PlayedSongLogs'
             return await _context.PlayedSongLogs
                 .Where(log => log.PlayedAt >= timestamp)
                 .ToListAsync();

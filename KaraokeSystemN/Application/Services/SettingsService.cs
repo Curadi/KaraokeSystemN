@@ -8,7 +8,6 @@ namespace KaraokeSystemN.Application.Services
         private readonly ISettingsRepository _settingsRepository;
         private const string PreventDuplicatesKey = "PreventDuplicateUserInQueue";
         private const string SongCooldownKey = "SongCooldownHours";
-        // Nova constante para a chave de configuração
         private const string ConfirmationTimeoutKey = "ConfirmationTimeoutSeconds";
         private const string OriginalVideosPathKey = "OriginalVideosPath";
         private const string ConvertedVideosPathKey = "ConvertedVideosPath";
@@ -45,11 +44,9 @@ namespace KaraokeSystemN.Application.Services
             await _settingsRepository.UpdateSettingAsync(SongCooldownKey, hours.ToString());
         }
 
-        // --- NOVO MÉTODO PARA OBTER O TEMPO DE CONFIRMAÇÃO ---
         public async Task<int> GetConfirmationTimeoutSecondsAsync()
         {
             var setting = await _settingsRepository.GetSettingByKeyAsync(ConfirmationTimeoutKey);
-            // Se a configuração não existir, retorna 20 como padrão.
             if (setting == null || !int.TryParse(setting.Value, out var seconds))
             {
                 return 20;
@@ -57,7 +54,6 @@ namespace KaraokeSystemN.Application.Services
             return seconds;
         }
 
-        // --- NOVO MÉTODO PARA DEFINIR O TEMPO DE CONFIRMAÇÃO ---
         public async Task SetConfirmationTimeoutSecondsAsync(int seconds)
         {
             await _settingsRepository.UpdateSettingAsync(ConfirmationTimeoutKey, seconds.ToString());
@@ -65,18 +61,15 @@ namespace KaraokeSystemN.Application.Services
         public async Task<string> GetOriginalVideosPathAsync()
         {
             var setting = await _settingsRepository.GetSettingByKeyAsync(OriginalVideosPathKey);
-            // Retorna o caminho guardado ou um caminho padrão de dentro do contentor
             return setting?.Value ?? "/app/videos";
         }
 
         public async Task<string> GetConvertedVideosPathAsync()
         {
             var setting = await _settingsRepository.GetSettingByKeyAsync(ConvertedVideosPathKey);
-            // Retorna o caminho guardado ou um caminho padrão de dentro do contentor
             return setting?.Value ?? "/app/videos/converted";
         }
 
-        // --- NOVOS MÉTODOS PARA DEFINIR OS CAMINHOS ---
         public async Task SetOriginalVideosPathAsync(string path)
         {
             await _settingsRepository.UpdateSettingAsync(OriginalVideosPathKey, path);

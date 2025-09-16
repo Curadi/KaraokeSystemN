@@ -52,7 +52,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// Injeção de Dependência
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<IQueueRepository, QueueRepository>();
@@ -60,7 +59,6 @@ builder.Services.AddScoped<QueueService>();
 builder.Services.AddScoped<VideoService>();
 builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 builder.Services.AddScoped<SettingsService>();
-// --- LINHA EM FALTA ADICIONADA AQUI ---
 builder.Services.AddScoped<IPlayedSongLogRepository, PlayedSongLogRepository>();
 builder.Services.AddScoped<VideoConversionService>();
 builder.Services.AddSingleton<ConversionStatusService>();

@@ -3,10 +3,8 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-// Endereço da sua API de backend
 const API_URL = 'http://localhost:7001/api/auth';
 
-// Componente para o formulário de login
 const LoginComponent = ({ setLoggedIn, setMessage }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -15,7 +13,6 @@ const LoginComponent = ({ setLoggedIn, setMessage }) => {
     const [countdown, setCountdown] = useState(3);
     const router = useRouter();
 
-    // Efeito para cuidar do contador e redirecionamento
     useEffect(() => {
         if (!isRedirecting) return;
 
@@ -28,7 +25,6 @@ const LoginComponent = ({ setLoggedIn, setMessage }) => {
             setCountdown(countdown - 1);
         }, 1000);
 
-        // Limpa o timer se o componente for desmontado
         return () => clearTimeout(timer);
     }, [isRedirecting, countdown, router]);
 
@@ -51,21 +47,19 @@ const LoginComponent = ({ setLoggedIn, setMessage }) => {
             }
 
             const data = await response.json();
-            localStorage.setItem('authToken', data.token); // Renomeado para consistência
+            localStorage.setItem('authToken', data.token); 
             localStorage.setItem('karaoke_username', data.username);
 
             setLoggedIn(true);
-            setIsRedirecting(true); // Inicia o processo de redirecionamento
+            setIsRedirecting(true); 
 
         } catch (error) {
             console.error('Erro no login:', error.message);
             setMessage(`Erro: ${error.message}`);
             setLoading(false);
         }
-        // Não definimos setLoading(false) no sucesso, pois a tela vai mudar
     };
 
-    // Se estiver redirecionando, mostra a mensagem com o contador
     if (isRedirecting) {
         return (
             <div className="text-center">
@@ -105,7 +99,6 @@ const LoginComponent = ({ setLoggedIn, setMessage }) => {
     );
 };
 
-// Componente para o formulário de registro
 const RegisterComponent = ({ setMessage, setIsLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -134,7 +127,6 @@ const RegisterComponent = ({ setMessage, setIsLogin }) => {
             }
 
             setMessage('Usuário cadastrado com sucesso! Faça o login para continuar.');
-            // Após o sucesso, muda para a tela de login
             setIsLogin(true);
 
         } catch (error) {
@@ -174,18 +166,16 @@ const RegisterComponent = ({ setMessage, setIsLogin }) => {
     );
 };
 
-// Página principal que renderiza os componentes
 export default function Home() {
     const [isLogin, setIsLogin] = useState(true);
     const [isLoggedIn, setLoggedIn] = useState(false);
     const [message, setMessage] = useState('');
     const router = useRouter();
 
-    // Verifica se o usuário já está logado ao carregar a página
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            router.push('/home'); // Se já tem token, vai direto para a home
+            router.push('/home');
         }
     }, [router]);
 
@@ -219,7 +209,7 @@ export default function Home() {
                     <button
                         onClick={() => {
                             setIsLogin(!isLogin);
-                            setMessage(''); // Limpa a mensagem ao alternar.
+                            setMessage(''); 
                         }}
                         className="mt-6 text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors"
                     >
