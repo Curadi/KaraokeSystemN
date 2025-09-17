@@ -109,20 +109,17 @@ export default function Songs() {
                     Selecione uma Música
                 </h1>
 
-                {error && <p className="mb-4 p-2 text-center rounded-md bg-red-100 text-red-700">{error}</p>}
+                <div className="max-h-96 overflow-y-auto mb-6 rounded-md">
+                    <button
+                        onClick={handleSubmitSong}
+                        disabled={!selectedSong || isSubmitting}
+                        className="bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                        {isSubmitting ? 'Salvando...' : 'Confirmar Música'}
+                    </button>
+                </div>
 
-                {userSongsInQueue.length > 0 && (
-                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h2 className="font-semibold text-center text-blue-800 mb-2">As suas músicas na fila:</h2>
-                        <ul className="list-disc list-inside text-center">
-                            {userSongsInQueue.map((song, index) => (
-                                <li key={index} className="font-bold text-blue-700">
-                                    {formatSongName(song.songName)}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                {error && <p className="mb-4 p-2 text-center rounded-md bg-red-100 text-red-700">{error}</p>}
 
                 <div>
                     <div className="flex items-center gap-4 mb-6">
@@ -136,13 +133,13 @@ export default function Songs() {
                             }}
                             className="flex-grow p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <button
-                            onClick={handleSubmitSong}
-                            disabled={!selectedSong || isSubmitting}
-                            className="bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                            {isSubmitting ? 'A aguardar...' : 'Confirmar Música'}
-                        </button>
+                        {/*<button*/}
+                        {/*    onClick={handleSubmitSong}*/}
+                        {/*    disabled={!selectedSong || isSubmitting}*/}
+                        {/*    className="bg-green-600 text-white font-bold py-3 px-6 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"*/}
+                        {/*>*/}
+                        {/*    {isSubmitting ? 'Salvando...' : 'Confirmar Música'}*/}
+                        {/*</button>*/}
                     </div>
 
                     <div className="max-h-96 overflow-y-auto mb-6 border rounded-md">
