@@ -56,6 +56,10 @@ services:
       # --- NOVA LINHA ADICIONADA AQUI ---
       # Mapeia a pasta 'ConvertedVideos' para '/app/videos/converted' dentro do contêiner
       - ./ConvertedVideos:/app/videos/converted
+      # --- NOVA LINHA ADICIONADA AQUI ---
+      # Mapeia uma nova pasta 'Assets' no seu projeto para '/app/assets' no contentor.
+      # É aqui que o admin irá colocar o ficheiro PDF do cardápio.
+      - ./Assets:/app/assets
 
   # Serviço do frontend em Next.js
   frontend:

@@ -11,6 +11,7 @@ namespace KaraokeSystemN.Application.Services
         private const string ConfirmationTimeoutKey = "ConfirmationTimeoutSeconds";
         private const string OriginalVideosPathKey = "OriginalVideosPath";
         private const string ConvertedVideosPathKey = "ConvertedVideosPath";
+        private const string MenuPathKey = "MenuPath";
 
         public SettingsService(ISettingsRepository settingsRepository)
         {
@@ -79,7 +80,16 @@ namespace KaraokeSystemN.Application.Services
         {
             await _settingsRepository.UpdateSettingAsync(ConvertedVideosPathKey, path);
         }
+        public async Task<string> GetMenuPathAsync()
+        {
+            var setting = await _settingsRepository.GetSettingByKeyAsync(MenuPathKey);
+            return setting?.Value ?? "/app/assets";
+        }
 
+        public async Task SetMenuPathAsync(string path)
+        {
+            await _settingsRepository.UpdateSettingAsync(MenuPathKey, path);
+        }
     }
 }
 

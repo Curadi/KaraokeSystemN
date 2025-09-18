@@ -31,6 +31,7 @@ namespace KaraokeSystemN.Application.Controllers
             public int ConfirmationTimeoutSeconds { get; set; }
             public string OriginalVideosPath { get; set; } = string.Empty;
             public string ConvertedVideosPath { get; set; } = string.Empty;
+            public string MenuPath { get; set; } = string.Empty;
         }
 
         [HttpGet]

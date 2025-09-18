@@ -51,6 +51,12 @@ export default function Home() {
                     >
                         Ver Fila de Espera
                     </button>
+                    <button
+                        onClick={() => router.push('/menu')}
+                        className="w-full bg-orange-500 text-white font-bold py-3 px-6 rounded-md hover:bg-orange-600 transition-colors text-lg"
+                    >
+                        Ver Cardápio
+                    </button>
 
                     {isAdmin && (
                         <div className="pt-4 border-t mt-4 space-y-4">
