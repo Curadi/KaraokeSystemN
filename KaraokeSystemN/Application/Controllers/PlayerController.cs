@@ -21,19 +21,18 @@ namespace KaraokeSystemN.Application.Controllers
             _settingsService = settingsService;
         }
 
-        // Endpoint para o player "espiar" a próxima música
         [HttpGet("peek-next")]
         public async Task<IActionResult> PeekNext()
         {
             if (_playerStatus.IsPlaying())
             {
-                return Ok(new { }); // Se um vídeo já estiver a tocar, não faz nada
+                return Ok(new { }); 
             }
 
-            var nextItem = await _queueService.GetNextAsync(); // Apenas busca, não remove
+            var nextItem = await _queueService.GetNextAsync(); 
             if (nextItem == null)
             {
-                return Ok(new { }); // A fila está vazia
+                return Ok(new { }); 
             }
 
             var confirmationTimeout = await _settingsService.GetConfirmationTimeoutSecondsAsync();
@@ -45,7 +44,6 @@ namespace KaraokeSystemN.Application.Controllers
             });
         }
 
-        // Endpoint para confirmar e tocar a próxima música
         [HttpPost("play-next")]
         public async Task<IActionResult> PlayNext()
         {
@@ -54,21 +52,20 @@ namespace KaraokeSystemN.Application.Controllers
                 return Conflict(new { message = "Um vídeo já está a ser reproduzido." });
             }
 
-            var itemToPlay = await _queueService.GetAndRemoveNextAsync(); // Agora, busca E remove
+            var itemToPlay = await _queueService.GetAndRemoveNextAsync(); 
             if (itemToPlay == null)
             {
                 return NotFound(new { message = "A fila está vazia." });
             }
 
-            _playerStatus.SetIsPlaying(true); // Bloqueia o player
+            _playerStatus.SetIsPlaying(true); 
             return Ok(itemToPlay);
         }
 
-        // Endpoint para informar que o player está livre novamente
         [HttpPost("finished")]
         public IActionResult MarkAsFinished()
         {
-            _playerStatus.SetIsPlaying(false); // Liberta o player
+            _playerStatus.SetIsPlaying(false); 
             return Ok();
         }
     }
